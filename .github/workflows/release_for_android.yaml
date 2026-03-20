@@ -46,9 +46,17 @@ jobs:
         run: |
           echo keyPassword=\${{ secrets.SIGNING_PASSWORD }} > ${{env.PROPERTIES_PATH}}
           echo storePassword=\${{ secrets.SIGNING_PASSWORD }} >> ${{env.PROPERTIES_PATH}}
+          echo storeType=JKS >> ${{env.PROPERTIES_PATH}}
           echo keyAlias=\${{ secrets.SIGNING_ALIAS }} >> ${{env.PROPERTIES_PATH}}
           echo storeFile=key.jks >> ${{env.PROPERTIES_PATH}}
           echo "${{ secrets.SIGNING_KEY }}" | base64 --decode > android/app/key.jks
+
+      - name: Validate Signing Keystore
+        run: |
+          keytool -list \
+            -keystore android/app/key.jks \
+            -storetype JKS \
+            -storepass "${{ secrets.SIGNING_PASSWORD }}" > /dev/null
 
       - name: Build APK
         run: |

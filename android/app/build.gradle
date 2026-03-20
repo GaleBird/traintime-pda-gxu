@@ -81,6 +81,7 @@ android {
         release {
             keyAlias keystoreProperties['keyAlias']
             keyPassword keystoreProperties['keyPassword']
+            storeType keystoreProperties['storeType'] ?: 'JKS'
             storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : file('key.jks')
             storePassword keystoreProperties['storePassword']
         }
