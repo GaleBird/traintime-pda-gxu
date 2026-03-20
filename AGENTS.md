@@ -122,7 +122,8 @@ Build examples:
 - Android 更新弹窗优先打开与设备 ABI 匹配的 GitHub Release APK 资产，若 release 中没有 APK 资产才回退到 release 页面；维护下载来源时不要恢复 F-Droid 旧链接逻辑。
 - GitHub Android 发版工作流现在由 tag push 自动触发，配置文件是 `.github/workflows/release_for_android.yaml`，触发规则为 `v*`；常规发版流程应是：先更新 `pubspec.yaml` 版本、提交并推送 `main`，再创建并推送同版本 tag，让 GitHub Actions 构建并上传 split-per-ABI APK 到 Release。
 - Android 发版工作流已切到 `actions/checkout@v4` / `actions/setup-java@v4`，并显式启用 Node 24；若 GitHub Actions 再次在 `Build APK` 失败，优先下载失败时自动上传的 artifact `android-release-build-log` 看完整构建日志，不要只看 annotations 里的摘要。
-- 当前 Android Release CI 的真实坑点不是 Node 警告，而是 release 签名：若日志出现 `KeytoolException` / `Tag number over 30 is not supported`，优先按 “JKS 被当成 PKCS12 解析” 处理。`android/app/build.gradle` 的 release signing 必须显式 `storeType 'JKS'`，workflow 生成的 `android/key.properties` 也必须写入 `storeType=JKS`，并在 build 前用 `keytool -list -storetype JKS` 校验 keystore。
+- 当前 Android Release CI 的真实坑点不是 Node 警告，而是 release 签名：若日志出现 `KeytoolException` / `Tag number over 30 is not supported`，多数是 keystore 类型或内容不匹配导致解析失败。工作流会在 `JKS` / `PKCS12` 间自动探测 `storeType` 并写入 `android/key.properties`；若两种类型都无法通过 `keytool -list` 校验，则优先检查 `SIGNING_KEY` 是否为 keystore 文件二进制的 base64（只能编码一次），以及 `SIGNING_PASSWORD` / `SIGNING_ALIAS` 是否正确。
+- Android 发版工作流会在签名步骤前创建并持续追加 `build_apk.log`；失败时 artifact 上传不会再出现 “No files were found with the provided path: build_apk.log” 的噪音警告。注意 GitHub 上的 “Re-run jobs” 会复用旧 commit 的 workflow 文件，不会应用后来提交的工作流修复；需要重新推 tag 或用 `workflow_dispatch` 对最新 commit 触发一次新运行。
 - 这台机器当前没有 `gh` 命令；若用户要“上传 APK 到 GitHub”，优先走“push tag 触发 GitHub Actions release”而不是依赖本地 GitHub CLI 直传。
 - `tool/generators/generate_gxu_launcher_icon.py` 现在用于把任意源图标准化为实际打包使用的 `assets/gxu.png`；需要替换品牌图时，优先运行该脚本并通过 `--source` 指向新图片，再执行 `flutter_launcher_icons` / `flutter_native_splash`。
 - 设计上下文已写入仓库根目录 `.impeccable.md`，后续界面/品牌类改动遵循“校园自然系：西大绿 + 米白 + 金色点缀”。
