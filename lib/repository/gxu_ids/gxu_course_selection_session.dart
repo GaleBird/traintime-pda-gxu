@@ -12,6 +12,7 @@ import 'package:watermeter/repository/network_session.dart';
 import 'package:watermeter/repository/preference.dart' as preference;
 
 class GxuCourseSelectionSession {
+  static const _defaultCacheDuration = Duration(hours: 24);
   static const courseSelectionCacheName = "gxu_course_selection.json";
   static final File file = File(
     "${supportPath.path}/$courseSelectionCacheName",
@@ -27,7 +28,7 @@ class GxuCourseSelectionSession {
     bool force = false,
   }) async {
     final cache = _loadCache();
-    if (!force && cache != null && _isCacheFresh()) {
+    if (!force && cache != null && _isCacheFresh(cache)) {
       isCourseSelectionCacheUsed = true;
       return cache;
     }
@@ -62,11 +63,15 @@ class GxuCourseSelectionSession {
     );
   }
 
-  bool _isCacheFresh() {
+  bool _isCacheFresh(GxuCourseSelectionSheet cache) {
     if (!file.existsSync()) {
       return false;
     }
-    return DateTime.now().difference(file.lastModifiedSync()).inMinutes < 15;
+    if (cache.selectionPhase == GxuCourseSelectionPhase.ended) {
+      return true;
+    }
+    final cacheAge = DateTime.now().difference(file.lastModifiedSync());
+    return cacheAge < _cacheDurationOf(cache.selectionPhase);
   }
 
   void _dumpCache(GxuCourseSelectionSheet sheet) {
@@ -78,6 +83,7 @@ class GxuCourseSelectionSession {
       username: preference.getString(preference.Preference.idsAccount),
       password: preference.getString(preference.Preference.idsPassword),
     );
+    final selectionPhase = await _fetchSelectionPhase();
     final semesterLabels = await _fetchSemesterLabels();
     final rows = await _fetchCourseRows();
     final entries = rows
@@ -87,7 +93,28 @@ class GxuCourseSelectionSession {
     return GxuCourseSelectionSheet(
       semesterLabels: semesterLabels,
       entries: entries,
+      selectionPhase: selectionPhase,
     );
+  }
+
+  Future<GxuCourseSelectionPhase> _fetchSelectionPhase() async {
+    try {
+      final response = await caSession.dio.get(
+        "${GxuCASession.yjsxtBase}/yjsjbxx/init/index/page",
+        options: _ajaxOptions(refererPath: "/index.html"),
+      );
+      final body = _mapOf(response.data, "广西大学选课首页");
+      final data = _mapOf(body["data"], "广西大学选课首页");
+      final xuankeDate = _mapOf(data["xuankeDate"], "广西大学选课首页");
+      return gxuCourseSelectionPhaseFromRemoteStatus(xuankeDate["STATUS"]);
+    } catch (error, stackTrace) {
+      log.warning(
+        "[GxuCourseSelectionSession] Failed to load course selection phase, fallback to unknown.",
+        error,
+        stackTrace,
+      );
+      return GxuCourseSelectionPhase.unknown;
+    }
   }
 
   Future<Map<String, String>> _fetchSemesterLabels() async {
@@ -152,16 +179,32 @@ class GxuCourseSelectionSession {
     if (value is Map) {
       return value.map((key, item) => MapEntry(key.toString(), item));
     }
+    if (value is String && value.trim().isNotEmpty) {
+      final decoded = jsonDecode(value);
+      if (decoded is Map) {
+        return decoded.map((key, item) => MapEntry(key.toString(), item));
+      }
+    }
     throw LoginFailedException(msg: "$scene接口返回异常。");
   }
 
-  Options _ajaxOptions() {
+  Duration _cacheDurationOf(GxuCourseSelectionPhase phase) {
+    switch (phase) {
+      case GxuCourseSelectionPhase.notStarted:
+      case GxuCourseSelectionPhase.inProgress:
+      case GxuCourseSelectionPhase.unknown:
+        return _defaultCacheDuration;
+      case GxuCourseSelectionPhase.ended:
+        return _defaultCacheDuration;
+    }
+  }
+
+  Options _ajaxOptions({required String refererPath}) {
     return Options(
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         "Origin": "https://yjsxt.gxu.edu.cn",
-        "Referer":
-            "${GxuCASession.yjsxtBase}/view?m=up#act=yjs/py/pkgl/ckkbOfYjs",
+        "Referer": "${GxuCASession.yjsxtBase}$refererPath",
       },
     );
   }
@@ -169,7 +212,9 @@ class GxuCourseSelectionSession {
   Options _jsonOptions() {
     return Options(
       contentType: Headers.jsonContentType,
-      headers: _ajaxOptions().headers,
+      headers: _ajaxOptions(
+        refererPath: "/view?m=up#act=yjs/py/pkgl/ckkbOfYjs",
+      ).headers,
     );
   }
 }

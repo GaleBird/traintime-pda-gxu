@@ -1,12 +1,16 @@
 import 'package:watermeter/model/gxu_ids/gxu_course_type.dart';
 
+enum GxuCourseSelectionPhase { unknown, notStarted, inProgress, ended }
+
 class GxuCourseSelectionSheet {
   final Map<String, String> semesterLabels;
   final List<GxuCourseSelectionEntry> entries;
+  final GxuCourseSelectionPhase selectionPhase;
 
   const GxuCourseSelectionSheet({
     required this.semesterLabels,
     required this.entries,
+    this.selectionPhase = GxuCourseSelectionPhase.unknown,
   });
 
   factory GxuCourseSelectionSheet.fromJson(Map<String, dynamic> json) {
@@ -14,9 +18,13 @@ class GxuCourseSelectionSheet {
     final entries = _listOf(
       json["entries"],
     ).map((item) => GxuCourseSelectionEntry.fromJson(_mapOf(item))).toList();
+    final selectionPhase = gxuCourseSelectionPhaseFromJson(
+      json["selectionPhase"],
+    );
     return GxuCourseSelectionSheet(
       semesterLabels: semesterLabels,
       entries: entries,
+      selectionPhase: selectionPhase,
     );
   }
 
@@ -24,6 +32,7 @@ class GxuCourseSelectionSheet {
     return {
       "semesterLabels": semesterLabels,
       "entries": entries.map((item) => item.toJson()).toList(),
+      "selectionPhase": selectionPhase.name,
     };
   }
 }
@@ -182,4 +191,29 @@ Map<String, String> _stringMapOf(dynamic value) {
     );
   }
   throw const FormatException("广西大学选课缓存已损坏。");
+}
+
+GxuCourseSelectionPhase gxuCourseSelectionPhaseFromRemoteStatus(
+  dynamic status,
+) {
+  switch (int.tryParse(status?.toString() ?? "")) {
+    case -1:
+      return GxuCourseSelectionPhase.notStarted;
+    case 0:
+      return GxuCourseSelectionPhase.inProgress;
+    case 1:
+      return GxuCourseSelectionPhase.ended;
+    default:
+      return GxuCourseSelectionPhase.unknown;
+  }
+}
+
+GxuCourseSelectionPhase gxuCourseSelectionPhaseFromJson(dynamic value) {
+  final name = value?.toString() ?? "";
+  for (final phase in GxuCourseSelectionPhase.values) {
+    if (phase.name == name) {
+      return phase;
+    }
+  }
+  return GxuCourseSelectionPhase.unknown;
 }

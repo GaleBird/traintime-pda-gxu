@@ -126,6 +126,7 @@ Build examples:
 - Android 发版工作流会在签名步骤前创建并持续追加 `build_apk.log`；失败时 artifact 上传不会再出现 “No files were found with the provided path: build_apk.log” 的噪音警告。注意 GitHub 上的 “Re-run jobs” 会复用旧 commit 的 workflow 文件，不会应用后来提交的工作流修复；需要重新推 tag 或用 `workflow_dispatch` 对最新 commit 触发一次新运行。
 - 这台机器当前没有 `gh` 命令；若用户要“上传 APK 到 GitHub”，优先走“push tag 触发 GitHub Actions release”而不是依赖本地 GitHub CLI 直传。
 - `tool/generators/generate_gxu_launcher_icon.py` 现在用于把任意源图标准化为实际打包使用的 `assets/gxu.png`；需要替换品牌图时，优先运行该脚本并通过 `--source` 指向新图片，再执行 `flutter_launcher_icons` / `flutter_native_splash`。
+- 当前 launcher/splash 图标源图已切到 `assets/Gemini_Generated_Image_2dp0k82dp0k82dp0.png`，并通过 `tool/generators/generate_gxu_launcher_icon.py --source assets/Gemini_Generated_Image_2dp0k82dp0k82dp0.png` 生成 `assets/gxu.png`；后续若重跑图标生成流程，默认以该源图为基准。
 - 设计上下文已写入仓库根目录 `.impeccable.md`，后续界面/品牌类改动遵循“校园自然系：西大绿 + 米白 + 金色点缀”。
 - `PigPage` 仍是首页底部导航的正式入口；不要再移除“猪图鉴赏”，除非用户明确要求。
 - GXU 选课情况页的学期筛选改为显式下拉框，入口文案要让用户直接看出“这里可以选学期”；选课概览保持信息优先的卡片式汇总。
@@ -133,6 +134,7 @@ Build examples:
 - GXU 选课卡片不展示上课时间文本，课程标题下方优先展示老师姓名；若接口返回多个老师，只显示第一个老师名称。
 - GXU 选课情况页的概览统计默认使用紧凑标签式汇总，不再保留手机端大号统计块；筛选区里的课程类型筛选直接平铺在面板内，不要再额外套一层大容器。
 - GXU 选课情况页的课程类型筛选使用单行分段按钮（全部/学位课/非学位课），不要再做成两行标题 + Chip 的大块布局。
+- GXU 选课情况缓存策略不再固定 15 分钟：自动进入页面时需读取研究生系统首页 `/yjsjbxx/init/index/page` 的 `xuankeDate.STATUS`。`进行中/未开始` 自动缓存 24 小时，`已结束` 则持续使用本地缓存直到用户手动刷新；页面刷新按钮必须继续强制拉取远端最新数据。
 - GXU 课表卡片现在要优先保证上课地点能完整看清：地点文本改为多行自适应并在极端长度时压缩显示，老师信息只在卡片高度足够时再追加展示；若老师字段包含多人，只展示第一个老师名称。
 - GXU 课表卡片里的上课地点继续保持强调显示：地点区域使用更强的字重和浅色底块标签样式，视觉层级要明显高于老师信息。
 - GXU 日程表不再显示“非本周 / 回到本周”状态入口；周次切换只保留顶部周次条与左右滑动。日期行需保持紧凑，当前日期高亮时也不能出现 RenderFlex 溢出。
