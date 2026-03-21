@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="GXU 研课表版本页，集中展示当前版本、更新摘要与版本说明。" />
+    <meta name="theme-color" content="#101010" />
+    <title>版本 | GXU 研课表</title>
+    <link rel="icon" type="image/png" href="/icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/base.css" />
+    <link rel="stylesheet" href="/styles/pages.css" />
+  </head>
+  <body data-page="release">
+    <div class="site-shell">
+      <header class="site-header">
+        <a class="brand" href="/" aria-label="GXU 研课表首页"><img class="brand-mark" src="/icon.png" alt="" /><div><div class="brand-kicker">GXU Graduate Toolkit</div><div class="brand-name">GXU 研课表</div></div></a>
+        <nav class="site-nav" aria-label="主导航"><a class="nav-link" data-nav-link="home" href="/">首页</a><a class="nav-link" data-nav-link="downloads" href="/downloads/">下载</a><a class="nav-link" data-nav-link="features" href="/features/">功能</a><a class="nav-link" data-nav-link="release" href="/release/">版本</a></nav>
+      </header>
+
+      <main class="page-main">
+        <section class="page-hero reveal">
+          <div class="hero-grid">
+            <div class="page-copy"><p class="eyebrow">Release Ledger</p><h1 class="hero-title">版本说明单独成页，首页就不需要再扛它。</h1><p class="lead">这里专门放当前版本、发布摘要、更新条目和备用发布页入口。信息少一点，用户反而更容易知道自己现在装的是什么。</p><div class="inline-data"><span class="pill">当前版本 <strong data-site-version>读取中</strong></span><span class="pill">更新条目 <strong data-site-note-count>0</strong></span></div></div>
+            <aside class="surface release-card"><p class="label">Current Release</p><strong data-site-version>读取中</strong><p data-site-summary>官网、下载直链和版本说明保持同一来源。</p><a class="jump-link" data-site-release-link href="/download/github">查看发布页</a></aside>
+          </div>
+        </section>
+
+        <section class="section reveal">
+          <div class="release-grid">
+            <div class="surface release-card"><p class="label">Notes</p><ul class="release-notes" data-site-release-notes><li>正在读取版本说明。</li></ul></div>
+            <div class="release-side"><div class="surface release-card"><p class="label">Manifest</p><strong>官网、应用与下载入口共用同一份线上清单。</strong><p>这样版本判断、官网展示和 APK 跳转可以保持一致，不会三边各自写死。</p></div><div class="surface release-card"><p class="label">Backup</p><strong data-site-release-label>读取中</strong><p>GitHub 发布页仍然保留，主要用于备用下载和公开版本归档。</p><a class="jump-link" data-site-github-link href="/download/github">GitHub 备用下载</a></div></div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer reveal"><div class="footer-grid"><div class="footer-panel"><div class="footer-label">Summary</div><strong data-site-summary>官网、下载直链和版本说明保持同一来源。</strong><p>版本页只展示当前发布，不再承担功能介绍。</p></div><div class="footer-panel"><div class="footer-label">Count</div><strong data-site-download-total>0</strong><p>若要下载，可直接转到下载页。</p></div><div class="footer-panel"><div class="footer-label">Download</div><strong>官网主按钮</strong><p>默认仍会跳到当前 arm64 安装包。</p></div></div></footer>
+    </div>
+
+    <script src="/scripts/shared.js" defer></script>
+  </body>
+</html>

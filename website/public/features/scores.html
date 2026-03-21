@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="GXU 研课表成绩页说明。" />
+    <meta name="theme-color" content="#101010" />
+    <title>成绩 | GXU 研课表</title>
+    <link rel="icon" type="image/png" href="/icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/base.css" />
+    <link rel="stylesheet" href="/styles/pages.css" />
+  </head>
+  <body data-page="features">
+    <div class="site-shell">
+      <header class="site-header"><a class="brand" href="/" aria-label="GXU 研课表首页"><img class="brand-mark" src="/icon.png" alt="" /><div><div class="brand-kicker">GXU Graduate Toolkit</div><div class="brand-name">GXU 研课表</div></div></a><nav class="site-nav" aria-label="主导航"><a class="nav-link" data-nav-link="home" href="/">首页</a><a class="nav-link" data-nav-link="downloads" href="/downloads/">下载</a><a class="nav-link" data-nav-link="features" href="/features/">功能</a><a class="nav-link" data-nav-link="release" href="/release/">版本</a></nav></header>
+      <main class="page-main">
+        <section class="page-hero reveal"><div class="hero-grid"><div class="page-copy"><p class="eyebrow">Feature 02 / Scores</p><h1 class="hero-title">成绩页把“看结果”和“算结果”分成两条动作。</h1><p class="lead">先看成绩档案，再决定要不要进入课程选择计算。这样层级更稳，不会让人一进页面就被过多数字淹没。</p><div class="inline-data"><span class="pill">成绩档案</span><span class="pill">选中课程计算</span><span class="pill">底部汇总条</span></div></div><div class="page-art"><figure class="surface art-frame"><img src="/screen-2.jpg" alt="GXU 研课表成绩截图" /></figure></div></div></section>
+        <section class="section reveal"><div class="info-grid"><article class="detail-card"><p class="label">Archive</p><strong>成绩信息保持紧凑，不做夸张英雄卡。</strong><p>身份信息、汇总指标和课程列表分区明确，首屏不会只剩一张大面板。</p></article><article class="detail-card"><p class="label">Calculation</p><strong>计算模式通过 FAB 进入。</strong><p>只有真的需要时才进入选课计算态，普通浏览不被额外控件干扰。</p></article><article class="detail-card"><p class="label">Feedback</p><strong>底部汇总条承接结果。</strong><p>学分、均分和绩点放到统一的底部反馈区，不把每张卡都做成仪表盘。</p></article></div></section>
+        <section class="section reveal"><ul class="detail-list surface"><li>成绩查询走 GXU 原生实现，不再依赖旧学校模板。</li><li>离线缓存与在线错误分开处理，避免假装“已成功”。</li><li>课程选择计算能力仍然保留，不会因为重写页面就把它删掉。</li></ul></section>
+        <section class="section reveal"><div class="cross-grid"><a class="surface cross-card" href="/features/selection.html"><p class="label">Next</p><strong>选课页</strong><p>从已出成绩切到已选课程。</p></a><a class="surface cross-card" href="/features/network.html"><p class="label">Also</p><strong>校园网页</strong><p>从成绩数据切换到网络查询。</p></a></div></section>
+      </main>
+      <footer class="site-footer reveal"><div class="footer-grid"><div class="footer-panel"><div class="footer-label">Version</div><strong data-site-version>读取中</strong><p>当前版本信息由官网统一注入。</p></div><div class="footer-panel"><div class="footer-label">Hub</div><strong>功能总览</strong><p>成绩只是四个高频入口之一。</p></div><div class="footer-panel"><div class="footer-label">Download</div><strong data-site-download-total>0</strong><p>下载入口在下载页集中维护。</p></div></div></footer>
+    </div>
+    <script src="/scripts/shared.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,24 @@
+gxu.app {
+  encode zstd gzip
+
+  handle /api/* {
+    reverse_proxy 127.0.0.1:9080
+  }
+
+  handle /download/* {
+    reverse_proxy 127.0.0.1:9080
+  }
+
+  handle /healthz {
+    reverse_proxy 127.0.0.1:9080
+  }
+
+  root * /var/www/gxu.app/public
+  file_server
+
+  header {
+    Referrer-Policy "strict-origin-when-cross-origin"
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "SAMEORIGIN"
+  }
+}

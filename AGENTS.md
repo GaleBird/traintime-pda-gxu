@@ -120,6 +120,13 @@ Build examples:
 - App 检查更新现在读取 DigitalOcean Spaces 清单 `https://myapk.sgp1.cdn.digitaloceanspaces.com/manifests/update.json`，实现位于 `lib/repository/pda_service_session.dart`；不要再接回旧的 `legacy.superbart.top/traintime_pda_backend` 或 GitHub `latest release` 直读接口。
 - 更新版本比较现在同时比较 `pubspec.yaml` 的语义版本和 `+build`；发布 tag 应与 `pubspec.yaml` 版本完全一致，格式优先使用 `v1.0.1+41` 这类带 build 号的 tag，否则应用内更新提示可能无法正确判断新旧版本。
 - Android 更新弹窗优先打开与设备 ABI 匹配的 Spaces APK 直链，`UpdateMessage.fdroid` 继续承载 Android 下载地址，GitHub Release 按钮仅作为备用下载入口；维护下载来源时不要恢复 F-Droid 旧链接逻辑。
+- Android 更新比较会先对当前项目的 split APK `versionCode` 做归一化：只有符合 `build.gradle` 覆盖规则的 `411+` / `...1|2|3` 这类 Android build 才会先除以 `10` 还原真实 build（例如安装包 `433` 视为发布 build `43`）；普通通用 APK 的 `41/42/43` 不能再被误判成 split 包。
+- 官网下载页现已独立部署在 `gxu.app`：静态资源源码位于 `website/public/`，Node 服务位于 `website/service/`，部署模板在 `website/deploy/`。线上结构是 `Caddy -> /var/www/gxu.app/public + reverse_proxy 127.0.0.1:9080 -> gxu-app.service`，其中 `/api/update` 代理 Spaces `update.json`，`/api/stats` 返回真实下载计数，`/download/*` 先计数再 302 到 DigitalOcean Spaces 或 GitHub Release。
+- 官网对外主入口当前是单页首页：首屏只保留下载按钮、版本/下载次数和当前发布摘要；功能与仓库来源继续留在同一页，不要再把首页改回多页面导航入口或超大海报式首屏。
+- 官网首页现已去掉独立“首页效果图”区块：功能区改为左侧四张 App 截图轮播、右侧四个仅显示标题的紧凑功能卡；源码区不再放额外解释文案，只保留仓库名、代码地址和跳转入口。
+- 官网静态页源码仍在 `website/public/`，注意 `/download/*` 已被后端占用作真实下载跳转接口；即使后续保留其他静态说明页，也不要把静态页面路由放到 `/download/` 下面。
+- VPS 上 `gxu-app.service` 以 `azureuser` 身份运行，工作目录 `/home/azureuser/gxuapp/site/service`，统计文件写入 `/home/azureuser/gxuapp/site/data/download-counts.json`；静态站点必须放在 `/var/www/gxu.app/public` 这类 `caddy` 可读目录，不能继续直接从 `/home/azureuser/...` 提供，否则公网会返回 403。
+- `gxu.app` 当前只启用裸域名；`www.gxu.app` 暂不接入，因为现有 DNS/代理链路会导致 ACME 挑战失败并拿不到证书。除非先修好 `www` 的 DNS 指向和代理设置，否则不要把 `www.gxu.app` 再写回 Caddy 站点块。
 - GitHub Android 发版工作流现在由 tag push 自动触发，配置文件是 `.github/workflows/release_for_android.yaml`，触发规则为 `v*`；常规发版流程应是：先更新 `pubspec.yaml` 版本、提交并推送 `main`，再创建并推送同版本 tag，让 GitHub Actions 构建并上传 split-per-ABI APK 到 Release。
 - Android 发版工作流现在还会把 split-per-ABI APK 上传到 DigitalOcean Spaces `myapk`，并覆盖 `manifests/update.json`；运行前必须在 GitHub Secrets 配置 `DO_SPACES_KEY`、`DO_SPACES_SECRET`、`DO_SPACES_BUCKET`、`DO_SPACES_REGION`、`DO_SPACES_CDN_BASE_URL`。
 - Android 发版工作流已切到 `actions/checkout@v4` / `actions/setup-java@v4`，并显式启用 Node 24；若 GitHub Actions 再次在 `Build APK` 失败，优先下载失败时自动上传的 artifact `android-release-build-log` 看完整构建日志，不要只看 annotations 里的摘要。

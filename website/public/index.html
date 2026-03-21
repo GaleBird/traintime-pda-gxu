@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta
+      name="description"
+      content="GXU 研课表官网首页，面向广西大学研究生，聚焦下载、版本与功能展示。"
+    />
+    <meta name="theme-color" content="#101010" />
+    <title>GXU 研课表</title>
+    <link rel="icon" type="image/png" href="/icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Instrument+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles/base.css" />
+    <link rel="stylesheet" href="/styles/home.css" />
+  </head>
+  <body data-page="home">
+    <div class="site-shell">
+      <header class="site-header">
+        <a class="brand" href="/" aria-label="GXU 研课表首页">
+          <img class="brand-mark" src="/icon.png" alt="" />
+          <div>
+            <div class="brand-kicker">GXU Graduate Toolkit</div>
+            <div class="brand-name">GXU 研课表</div>
+          </div>
+        </a>
+        <nav class="site-nav" aria-label="主导航">
+          <a class="nav-link" data-nav-link="home" href="#top">首页</a>
+          <a class="nav-link" href="#download">下载</a>
+          <a class="nav-link" href="#features">功能</a>
+          <a class="nav-link" href="#source">源码</a>
+        </nav>
+      </header>
+
+      <main class="page-main" id="top">
+        <section class="page-hero reveal landing-hero">
+          <div class="hero-copy-panel hero-copy-panel-solo">
+            <div class="hero-heading">
+              <div class="app-mark-card">
+                <img class="app-mark-image" src="/icon.png" alt="GXU 研课表图标" />
+              </div>
+              <div class="hero-heading-copy">
+                <p class="eyebrow">广西大学研究生 / 非官方开源维护线</p>
+                <h1 class="landing-title">GXU 研课表</h1>
+              </div>
+            </div>
+            <p class="landing-subtitle">
+              面向广西大学研究生的校园信息查询应用。把课表、成绩、选课和校园网整理进一个更稳定、更直接的移动入口里。
+            </p>
+            <div class="action-row landing-actions" id="download">
+              <a class="button" href="/download/android">下载 Android</a>
+              <a class="button-secondary" href="/download/arm64-v8a">国内直链</a>
+              <a
+                class="button-ghost"
+                data-site-github-link
+                href="/download/github"
+                >GitHub 备用下载</a
+              >
+            </div>
+            <div class="hero-data-band">
+              <div class="metric-pill">
+                <span class="label">版本</span>
+                <strong data-site-version>读取中</strong>
+              </div>
+              <div class="metric-pill">
+                <span class="label">下载次数</span>
+                <strong data-site-download-total>0</strong>
+              </div>
+              <article class="release-strip">
+                <span class="label">当前发布</span>
+                <p data-site-summary>读取中</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="section reveal" id="features">
+          <div class="section-head landing-section-head compact-head">
+            <p class="eyebrow">主要功能</p>
+            <h2 class="section-title compact-title">四个高频入口。</h2>
+          </div>
+          <div class="feature-showcase">
+            <section class="feature-gallery" aria-label="应用界面预览" data-gallery>
+              <div class="gallery-window">
+                <div class="gallery-track" data-gallery-track>
+                  <figure class="gallery-shot is-active">
+                    <img src="/screen-1.jpg" alt="GXU 研课表首页效果图" loading="lazy" />
+                  </figure>
+                  <figure class="gallery-shot">
+                    <img src="/screen-2.jpg" alt="GXU 研课表课表界面效果图" loading="lazy" />
+                  </figure>
+                  <figure class="gallery-shot">
+                    <img src="/screen-3.jpg" alt="GXU 研课表成绩界面效果图" loading="lazy" />
+                  </figure>
+                  <figure class="gallery-shot">
+                    <img src="/screen-4.jpg" alt="GXU 研课表校园网界面效果图" loading="lazy" />
+                  </figure>
+                </div>
+              </div>
+              <div class="gallery-dots" aria-label="效果图切换">
+                <button class="gallery-dot is-active" type="button" aria-label="查看第 1 张图"></button>
+                <button class="gallery-dot" type="button" aria-label="查看第 2 张图"></button>
+                <button class="gallery-dot" type="button" aria-label="查看第 3 张图"></button>
+                <button class="gallery-dot" type="button" aria-label="查看第 4 张图"></button>
+              </div>
+            </section>
+
+            <div class="feature-list" aria-label="功能列表">
+              <article class="feature-row">
+                <h3>课表与日程</h3>
+              </article>
+              <article class="feature-row">
+                <h3>成绩与计算</h3>
+              </article>
+              <article class="feature-row">
+                <h3>选课情况</h3>
+              </article>
+              <article class="feature-row">
+                <h3>校园网查询</h3>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="section reveal" id="source">
+          <div class="section-head landing-section-head compact-head">
+            <p class="eyebrow">源码地址</p>
+            <h2 class="section-title compact-title">仓库地址。</h2>
+          </div>
+          <div class="source-grid">
+            <article class="source-card">
+              <p class="label">Current Repository</p>
+              <strong>2484895358 / traintime_pda</strong>
+              <code class="repo-code">github.com/2484895358/traintime_pda</code>
+              <a
+                class="jump-link"
+                href="https://github.com/2484895358/traintime_pda"
+                target="_blank"
+                rel="noreferrer"
+                >打开当前仓库</a
+              >
+            </article>
+            <article class="source-card">
+              <p class="label">Upstream</p>
+              <strong>BenderBlog / traintime_pda</strong>
+              <code class="repo-code">github.com/BenderBlog/traintime_pda</code>
+              <a
+                class="jump-link"
+                href="https://github.com/BenderBlog/traintime_pda"
+                target="_blank"
+                rel="noreferrer"
+                >打开上游仓库</a
+              >
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer reveal">
+        <div class="footer-bar">
+          <div class="footer-item">
+            <div class="footer-label">Download</div>
+            <strong data-site-download-total>0</strong>
+          </div>
+          <div class="footer-item">
+            <div class="footer-label">Version</div>
+            <strong data-site-version>读取中</strong>
+          </div>
+          <a class="footer-link" data-site-github-link href="/download/github"
+            >GitHub 备用下载</a
+          >
+        </div>
+      </footer>
+    </div>
+
+    <script src="/scripts/shared.js" defer></script>
+  </body>
+</html>

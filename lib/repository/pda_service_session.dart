@@ -13,6 +13,7 @@ import 'package:watermeter/model/pda_service/message.dart';
 import 'package:watermeter/repository/fork_info.dart';
 import 'package:watermeter/repository/logger.dart';
 import 'package:watermeter/repository/preference.dart' as pref;
+import 'package:watermeter/repository/update_build_number.dart';
 
 enum UpdateCheckResult { available, latest, localAhead, noRelease, failed }
 
@@ -217,8 +218,12 @@ _ReleaseAsset? _findPreferredAsset(
 }
 
 UpdateCheckResult _compareWithLocalVersion(String remoteCode) {
+  final localBuild = normalizeBuildNumberForUpdateComparison(
+    rawBuild: int.tryParse(pref.packageInfo.buildNumber) ?? 0,
+    isAndroid: Platform.isAndroid,
+  );
   final localVersion = _AppVersion.parse(
-    '${pref.packageInfo.version}+${pref.packageInfo.buildNumber}',
+    '${pref.packageInfo.version}+$localBuild',
   );
   final remoteVersion = _AppVersion.parse(remoteCode);
   final partComparison = _compareVersionParts(

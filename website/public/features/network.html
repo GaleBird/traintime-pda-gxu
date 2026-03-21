@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="GXU 研课表校园网页说明。" />
+    <meta name="theme-color" content="#101010" />
+    <title>校园网 | GXU 研课表</title>
+    <link rel="icon" type="image/png" href="/icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/base.css" />
+    <link rel="stylesheet" href="/styles/pages.css" />
+  </head>
+  <body data-page="features">
+    <div class="site-shell">
+      <header class="site-header"><a class="brand" href="/" aria-label="GXU 研课表首页"><img class="brand-mark" src="/icon.png" alt="" /><div><div class="brand-kicker">GXU Graduate Toolkit</div><div class="brand-name">GXU 研课表</div></div></a><nav class="site-nav" aria-label="主导航"><a class="nav-link" data-nav-link="home" href="/">首页</a><a class="nav-link" data-nav-link="downloads" href="/downloads/">下载</a><a class="nav-link" data-nav-link="features" href="/features/">功能</a><a class="nav-link" data-nav-link="release" href="/release/">版本</a></nav></header>
+      <main class="page-main">
+        <section class="page-hero reveal"><div class="hero-grid"><div class="page-copy"><p class="eyebrow">Feature 04 / Network</p><h1 class="hero-title">校园网页把“缓存优先”放在前面，减少无意义刷新。</h1><p class="lead">首页读缓存，详情页再刷新，查询密码独立保存。真正需要实时数据时再触发远端请求，整个体验比一进页面就加载稳定得多。</p><div class="inline-data"><span class="pill">缓存优先</span><span class="pill">手动刷新</span><span class="pill">余额与流量</span></div></div><div class="page-art"><figure class="surface art-frame"><img src="/screen-4.jpg" alt="GXU 研课表校园网截图" /></figure></div></div></section>
+        <section class="section reveal"><div class="info-grid"><article class="detail-card"><p class="label">Cache</p><strong>先展示上次成功结果。</strong><p>用户一进入就能看到最近一次可用数据，而不是先等网络请求转圈。</p></article><article class="detail-card"><p class="label">Refresh</p><strong>刷新动作明确留在详情页。</strong><p>是否同步远端由用户自己触发，不让首页变成网络请求的试验场。</p></article><article class="detail-card"><p class="label">Parsing</p><strong>解析围绕真实标签，而不是臆造字段。</strong><p>一旦页面结构变掉，就直接报错，而不是偷偷拼假数据。</p></article></div></section>
+        <section class="section reveal"><ul class="detail-list surface"><li>Dr.COM 查询密码独立保存，不和主账号密码混用。</li><li>详情页刷新失败时仍保留缓存数据和失败提示，不伪造成功。</li><li>刷新状态会在所有提前退出路径上正确释放，避免按钮卡死。</li></ul></section>
+        <section class="section reveal"><div class="cross-grid"><a class="surface cross-card" href="/features/classtable.html"><p class="label">Back</p><strong>课表页</strong><p>回到最常用的日程入口。</p></a><a class="surface cross-card" href="/downloads/"><p class="label">Download</p><strong>下载页</strong><p>准备安装时直接去下载页。</p></a></div></section>
+      </main>
+      <footer class="site-footer reveal"><div class="footer-grid"><div class="footer-panel"><div class="footer-label">Version</div><strong data-site-version>读取中</strong><p>官网版本仍统一驱动所有页面。</p></div><div class="footer-panel"><div class="footer-label">Hub</div><strong>功能总览</strong><p>校园网查询是第四个功能页。</p></div><div class="footer-panel"><div class="footer-label">Download</div><strong data-site-download-total>0</strong><p>下载入口与统计仍在官网层处理。</p></div></div></footer>
+    </div>
+    <script src="/scripts/shared.js" defer></script>
+  </body>
+</html>

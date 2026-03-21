@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="GXU 研课表选课页说明。" />
+    <meta name="theme-color" content="#101010" />
+    <title>选课 | GXU 研课表</title>
+    <link rel="icon" type="image/png" href="/icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/base.css" />
+    <link rel="stylesheet" href="/styles/pages.css" />
+  </head>
+  <body data-page="features">
+    <div class="site-shell">
+      <header class="site-header"><a class="brand" href="/" aria-label="GXU 研课表首页"><img class="brand-mark" src="/icon.png" alt="" /><div><div class="brand-kicker">GXU Graduate Toolkit</div><div class="brand-name">GXU 研课表</div></div></a><nav class="site-nav" aria-label="主导航"><a class="nav-link" data-nav-link="home" href="/">首页</a><a class="nav-link" data-nav-link="downloads" href="/downloads/">下载</a><a class="nav-link" data-nav-link="features" href="/features/">功能</a><a class="nav-link" data-nav-link="release" href="/release/">版本</a></nav></header>
+      <main class="page-main">
+        <section class="page-hero reveal"><div class="hero-grid"><div class="page-copy"><p class="eyebrow">Feature 03 / Course Selection</p><h1 class="hero-title">选课页用显式筛选说话，不靠大块装饰。</h1><p class="lead">学期切换、学位/非学位筛选和紧凑概览都直接摆出来。用户进入页面后，先确定学期，再看课程集合，路径更短。</p><div class="inline-data"><span class="pill">学期下拉</span><span class="pill">单行分段筛选</span><span class="pill">紧凑概览</span></div></div><div class="page-art"><figure class="surface art-frame"><img src="/screen-3.jpg" alt="GXU 研课表选课截图" /></figure></div></div></section>
+        <section class="section reveal"><div class="info-grid"><article class="detail-card"><p class="label">Semester</p><strong>学期筛选是显式入口。</strong><p>用户一眼能知道“这里可以切学期”，不需要先猜测页面逻辑。</p></article><article class="detail-card"><p class="label">Filter</p><strong>课程类型筛选平铺呈现。</strong><p>全部 / 学位课 / 非学位课保持单行分段结构，避免两层嵌套容器。</p></article><article class="detail-card"><p class="label">Cards</p><strong>课程卡片优先展示老师与地点。</strong><p>不再把大量低价值字段塞入首屏，卡片更容易扫读。</p></article></div></section>
+        <section class="section reveal"><ul class="detail-list surface"><li>页面自动缓存策略跟随选课状态变化，不再固定死 15 分钟。</li><li>已结束时可持续使用本地缓存，手动刷新才强制拉远端。</li><li>课程类型判断以真实字段为准，不再用脆弱的字符串包含逻辑。</li></ul></section>
+        <section class="section reveal"><div class="cross-grid"><a class="surface cross-card" href="/features/network.html"><p class="label">Next</p><strong>校园网页</strong><p>继续看网络查询的处理方式。</p></a><a class="surface cross-card" href="/features/classtable.html"><p class="label">Also</p><strong>课表页</strong><p>回到日常最高频的课程入口。</p></a></div></section>
+      </main>
+      <footer class="site-footer reveal"><div class="footer-grid"><div class="footer-panel"><div class="footer-label">Version</div><strong data-site-version>读取中</strong><p>版本和下载依然由官网统一注入。</p></div><div class="footer-panel"><div class="footer-label">Hub</div><strong>功能总览</strong><p>选课页是四个功能页中的第三页。</p></div><div class="footer-panel"><div class="footer-label">Download</div><strong data-site-download-total>0</strong><p>下载入口依旧集中在下载页。</p></div></div></footer>
+    </div>
+    <script src="/scripts/shared.js" defer></script>
+  </body>
+</html>

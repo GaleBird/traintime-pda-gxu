@@ -1,0 +1,17 @@
+[Unit]
+Description=GXU App download site service
+After=network.target
+
+[Service]
+Type=simple
+User=azureuser
+WorkingDirectory=/home/azureuser/gxuapp/site/service
+Environment=PORT=9080
+Environment=UPDATE_MANIFEST_URL=https://myapk.sgp1.cdn.digitaloceanspaces.com/manifests/update.json
+Environment=STATS_FILE=/home/azureuser/gxuapp/site/data/download-counts.json
+ExecStart=/usr/bin/node /home/azureuser/gxuapp/site/service/server.js
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

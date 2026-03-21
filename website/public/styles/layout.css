@@ -1,0 +1,272 @@
+:root {
+  --paper: oklch(0.978 0.002 85);
+  --paper-strong: oklch(0.952 0.003 85);
+  --panel: color-mix(in oklab, white 88%, var(--paper));
+  --panel-strong: color-mix(in oklab, white 78%, var(--paper));
+  --ink: oklch(0.18 0.004 260);
+  --ink-soft: oklch(0.36 0.004 260);
+  --ink-faint: oklch(0.52 0.003 260);
+  --line: oklch(0.84 0.003 260);
+  --line-strong: oklch(0.7 0.004 260);
+  --shadow: 0 24px 70px color-mix(in oklab, var(--ink) 10%, transparent);
+  --radius-lg: 32px;
+  --radius-md: 22px;
+  --radius-sm: 16px;
+  --content: min(1220px, calc(100vw - 32px));
+  --display: clamp(2.8rem, 4.8vw, 5rem);
+  --headline: clamp(1.8rem, 2.6vw, 3rem);
+  --title: clamp(1.35rem, 1.8vw, 1.8rem);
+  --meta: 0.82rem;
+  --page-pad: clamp(1.2rem, 2vw, 1.8rem);
+  --section-gap: clamp(2.4rem, 5vw, 4.4rem);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: "Instrument Sans", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top left, color-mix(in oklab, var(--paper-strong) 78%, white) 0, transparent 34%),
+    linear-gradient(180deg, var(--paper), oklch(0.988 0.001 85));
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--line) 48%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--line) 48%, transparent) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(180deg, white, transparent 88%);
+  opacity: 0.36;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.site-shell {
+  position: relative;
+  z-index: 1;
+  width: var(--content);
+  margin: 0 auto;
+  padding-bottom: 56px;
+}
+
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 18px 0 10px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-mark {
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+}
+
+.brand-kicker,
+.eyebrow,
+.label,
+.nav-link,
+.jump-link,
+.mini-card dt,
+.footer-label,
+.feature-index {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.brand-kicker,
+.eyebrow,
+.label,
+.jump-link,
+.mini-card dt,
+.footer-label,
+.feature-index {
+  font-size: var(--meta);
+  color: var(--ink-faint);
+}
+
+.brand-name {
+  margin-top: 2px;
+  font-size: 0.96rem;
+  font-weight: 700;
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.76rem;
+}
+
+.nav-link:hover,
+.nav-link.is-current {
+  border-color: var(--line-strong);
+  background: color-mix(in oklab, white 72%, var(--paper));
+  color: var(--ink);
+}
+
+.page-main {
+  display: grid;
+  gap: var(--section-gap);
+}
+
+.page-hero,
+.section {
+  position: relative;
+}
+
+.hero-grid,
+.info-grid,
+.footer-grid,
+.flow-grid {
+  display: grid;
+  gap: 22px;
+}
+
+.hero-grid {
+  grid-template-columns: minmax(0, 1.26fr) minmax(340px, 0.9fr);
+}
+
+.page-hero {
+  padding: clamp(16px, 4vw, 34px) 0 0;
+}
+
+.eyebrow {
+  margin: 0 0 14px;
+}
+
+.hero-title,
+.section-title,
+.feature-title,
+.large-stat,
+.number-badge {
+  margin: 0;
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 600;
+  line-height: 0.96;
+  letter-spacing: -0.03em;
+}
+
+.hero-title {
+  max-width: 10ch;
+  font-size: var(--display);
+}
+
+.section-title {
+  max-width: 18ch;
+  font-size: var(--headline);
+}
+
+.hero-title .muted-word,
+.section-title .muted-word,
+.feature-title .muted-word {
+  color: color-mix(in oklab, var(--ink) 70%, var(--ink-faint));
+}
+
+.lead,
+.section-copy,
+.feature-copy,
+.surface p,
+.release-notes li,
+.flow-step p,
+.site-footer p,
+.entry-copy,
+.download-copy,
+.detail-list li {
+  color: var(--ink-soft);
+  line-height: 1.72;
+}
+
+.lead {
+  max-width: 52ch;
+  margin: 16px 0 0;
+  font-size: 1.06rem;
+}
+
+.section-head {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.section-copy {
+  max-width: 60ch;
+  margin: 0;
+}
+
+.site-footer {
+  padding-top: 26px;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 980px) {
+  .hero-grid,
+  .info-grid,
+  .flow-grid,
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-title,
+  .section-title {
+    max-width: none;
+  }
+}
+
+@media (max-width: 720px) {
+  :root {
+    --content: min(100vw - 20px, 100%);
+    --page-pad: 18px;
+  }
+
+  .site-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .site-nav {
+    width: 100%;
+  }
+
+  .nav-link {
+    flex: 1 1 auto;
+  }
+}

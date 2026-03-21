@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="GXU 研课表下载页，集中提供 APK 直链、ABI 下载矩阵和备用下载入口。" />
+    <meta name="theme-color" content="#101010" />
+    <title>下载 | GXU 研课表</title>
+    <link rel="icon" type="image/png" href="/icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/base.css" />
+    <link rel="stylesheet" href="/styles/pages.css" />
+  </head>
+  <body data-page="downloads">
+    <div class="site-shell">
+      <header class="site-header">
+        <a class="brand" href="/" aria-label="GXU 研课表首页"><img class="brand-mark" src="/icon.png" alt="" /><div><div class="brand-kicker">GXU Graduate Toolkit</div><div class="brand-name">GXU 研课表</div></div></a>
+        <nav class="site-nav" aria-label="主导航"><a class="nav-link" data-nav-link="home" href="/">首页</a><a class="nav-link" data-nav-link="downloads" href="/downloads/">下载</a><a class="nav-link" data-nav-link="features" href="/features/">功能</a><a class="nav-link" data-nav-link="release" href="/release/">版本</a></nav>
+      </header>
+
+      <main class="page-main">
+        <section class="page-hero reveal">
+          <div class="hero-grid">
+            <div class="page-copy">
+              <p class="eyebrow">Download</p>
+              <h1 class="hero-title">下载页先把入口摆正，再谈版本来源。</h1>
+              <p class="lead">官网负责查清单并打开 APK 直链，浏览器负责下载，系统负责安装。这里集中放主下载按钮、分架构 APK、GitHub 备用入口和真实下载次数。</p>
+              <div class="action-row"><a class="button" href="/download/android">直接下载 Android</a><a class="button-secondary" data-site-github-link href="/download/github">GitHub 备用下载</a></div>
+              <div class="inline-data"><span class="pill">当前版本 <strong data-site-version>读取中</strong></span><span class="pill">官网下载次数 <strong data-site-download-total>0</strong></span><span class="pill">更新条目 <strong data-site-note-count>0</strong></span></div>
+            </div>
+            <aside class="download-panel">
+              <div class="surface download-card"><p class="label">Primary</p><h2 class="download-title">官网直链</h2><p class="download-copy">默认优先 Android arm64。多数近年的安卓设备都应该先走这个入口。</p><div class="download-actions"><a class="button" href="/download/android">Android 主按钮</a><a class="inline-link" href="#matrix">看全部架构</a></div></div>
+              <div class="surface download-card"><p class="label">Backup</p><h2 class="download-title">备用来源</h2><p class="download-copy">如果主源短时不可达，GitHub 发布页仍然保留作为备用下载入口。</p><a class="jump-link" data-site-github-link href="/download/github">打开 GitHub 备用下载</a></div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="section reveal" id="matrix">
+          <div class="section-head"><p class="eyebrow">APK Matrix</p><h2 class="section-title">把架构拆开列出来，比把说明挤在首页更清楚。</h2></div>
+          <div class="download-grid">
+            <div class="surface download-card"><p class="label">Available Builds</p><div class="download-matrix" data-site-download-matrix><a href="/download/arm64-v8a">Android arm64</a><a href="/download/armeabi-v7a">Android 32-bit</a><a href="/download/x86_64">Android x86_64</a></div></div>
+            <div class="surface download-card"><p class="label">Summary</p><strong data-site-summary>官网、下载直链和版本说明保持同一来源。</strong><ul class="detail-list"><li>官网主按钮默认跳到当前版本的 arm64 包。</li><li>分架构 APK 适合手动挑选或排查兼容性。</li><li>官网统计的是点击跳转次数，不会伪造下载量。</li></ul></div>
+          </div>
+        </section>
+
+        <section class="section reveal">
+          <div class="section-head"><p class="eyebrow">How It Works</p><h2 class="section-title">更新链路独立成一段说明，首页就不用再背这些细节。</h2></div>
+          <div class="flow-grid">
+            <article class="flow-step"><p class="label">Step 1</p><p class="number-badge">01</p><p>应用和官网都先读取同一份线上清单，确认当前版本与可用下载资产。</p></article>
+            <article class="flow-step"><p class="label">Step 2</p><p class="number-badge">02</p><p>官网下载入口只负责跳转到当前版本 APK 直链，不在网页里自己处理下载流。</p></article>
+            <article class="flow-step"><p class="label">Step 3</p><p class="number-badge">03</p><p>浏览器完成下载，Android 系统负责安装。GitHub 入口仅作为备用来源保留。</p></article>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer reveal">
+        <div class="footer-grid">
+          <div class="footer-panel"><div class="footer-label">Version</div><strong data-site-version>读取中</strong><p>下载页只保留和下载决策有关的信息，不把所有产品说明再塞一遍。</p></div>
+          <div class="footer-panel"><div class="footer-label">Count</div><strong data-site-download-total>0</strong><p>计数来源于官网跳转接口。</p></div>
+          <div class="footer-panel"><div class="footer-label">Backup</div><strong data-site-release-label>读取中</strong><p>备用发布页仍然可从这里进入。</p></div>
+        </div>
+      </footer>
+    </div>
+
+    <script src="/scripts/shared.js" defer></script>
+  </body>
+</html>
