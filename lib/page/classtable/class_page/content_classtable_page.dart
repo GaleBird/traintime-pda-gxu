@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:styled_widget/styled_widget.dart';
 import 'package:watermeter/page/classtable/class_page/classtable_actions_menu.dart';
+import 'package:watermeter/page/classtable/class_page/class_table_off_week_hint.dart';
 import 'package:watermeter/page/classtable/class_page/classtable_week_pager.dart';
 import 'package:watermeter/page/classtable/classtable_constant.dart';
 import 'package:watermeter/page/classtable/classtable_responsive.dart';
@@ -37,6 +38,7 @@ class _ContentClassTablePageState extends State<ContentClassTablePage> {
 
   late final PageController pageControl;
   late final ScrollController rowControl;
+  late final ValueNotifier<int> _visibleWeek;
 
   late BoxDecoration decoration;
   late ClassTableWidgetState classTableState;
@@ -62,6 +64,7 @@ class _ContentClassTablePageState extends State<ContentClassTablePage> {
   void dispose() {
     if (_isInited) {
       pageControl.removeListener(_onPageControlScrolled);
+      _visibleWeek.dispose();
       _pageProgress.dispose();
       pageControl.dispose();
       rowControl.dispose();
@@ -90,6 +93,7 @@ class _ContentClassTablePageState extends State<ContentClassTablePage> {
       _pageProgress = ValueNotifier<double>(
         classTableState.chosenWeek.toDouble(),
       );
+      _visibleWeek = ValueNotifier<int>(classTableState.chosenWeek);
       pageControl.addListener(_onPageControlScrolled);
       _isInited = true;
     }
@@ -211,6 +215,11 @@ class _ContentClassTablePageState extends State<ContentClassTablePage> {
     return page.round();
   }
 
+  void _updateVisibleWeek(int weekIndex) {
+    if (_visibleWeek.value == weekIndex) return;
+    _visibleWeek.value = weekIndex;
+  }
+
   Future<void> _onWeekTapped(
     int weekIndex, {
     required double viewportWidth,
@@ -219,6 +228,7 @@ class _ContentClassTablePageState extends State<ContentClassTablePage> {
     final distance = (_currentWeekIndex() - weekIndex).abs();
     final duration = classTableWeekJumpDuration(distance: distance);
     classTableState.chosenWeek = weekIndex;
+    _updateVisibleWeek(weekIndex);
 
     final shouldAnimatePage = _shouldAnimatePageControl(weekIndex);
     isTopRowLocked = shouldAnimatePage;
@@ -270,6 +280,7 @@ class _ContentClassTablePageState extends State<ContentClassTablePage> {
             onPageChanged: (value) {
               if (isTopRowLocked) return;
               classTableState.chosenWeek = value;
+              _updateVisibleWeek(value);
               if (!rowControl.hasClients) return;
               rowControl.animateTo(
                 _weekRowOffsetForIndex(
@@ -295,7 +306,13 @@ class _ContentClassTablePageState extends State<ContentClassTablePage> {
           onPressed: () =>
               Navigator.of(ClassTableState.of(context)!.parentContext).pop(),
         ),
-        actions: [ClasstableActionsMenu(classTableState: classTableState)],
+        actions: [
+          ClassTableOffWeekAction(
+            visibleWeekListenable: _visibleWeek,
+            currentWeek: classTableState.currentWeek,
+          ),
+          ClasstableActionsMenu(classTableState: classTableState),
+        ],
       ),
       body: LayoutBuilder(
         builder: (context, constraints) => _buildBody(constraints),
