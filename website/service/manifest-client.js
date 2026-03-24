@@ -1,4 +1,8 @@
 const config = require("./config");
+const {
+  assertAllowedRemoteUrl,
+  verifyManifestSignature,
+} = require("./manifest-security");
 
 const DEFAULT_SUMMARY = "官网、下载直链和版本说明保持同一来源。";
 const CHANGELOG_PREFIX = /^full changelog:/i;
@@ -16,7 +20,9 @@ async function fetchManifest() {
   if (!response.ok) {
     throw new Error(`manifest returned ${response.status}`);
   }
-  return response.json();
+  const manifest = await response.json();
+  const signature = verifyManifestSignature(manifest, config);
+  return { manifest, signature };
 }
 
 function normalizeVersionTag(rawTag) {
@@ -53,32 +59,44 @@ function normalizeReleaseLine(line) {
 
 function normalizeDownloads(assets) {
   const source = Array.isArray(assets) ? assets : [];
-  return DOWNLOAD_MAP.map((item) => {
-    const asset = source.find(
-      (entry) =>
-        String(entry?.name ?? "").toLowerCase().includes(item.keyword),
-    );
-    if (!asset) {
-      return null;
-    }
-    return {
-      id: item.id,
-      label: item.label,
-      href: `/download/${item.id}`,
-      url: String(asset.browser_download_url ?? ""),
-    };
-  }).filter(Boolean);
+  return DOWNLOAD_MAP.map((item) =>
+    normalizeDownloadItem(item, source),
+  ).filter(Boolean);
 }
 
-function buildUpdateView(manifest) {
+function normalizeDownloadItem(item, source) {
+  const asset = source.find((entry) =>
+    String(entry?.name ?? "").toLowerCase().includes(item.keyword),
+  );
+  if (!asset) {
+    return null;
+  }
+  return {
+    id: item.id,
+    label: item.label,
+    href: `/download/${item.id}`,
+    url: assertAllowedRemoteUrl(
+      asset.browser_download_url,
+      config.allowedDownloadHosts,
+      `download asset ${item.id}`,
+    ),
+  };
+}
+
+function buildUpdateView(manifest, signature) {
   const notes = parseReleaseNotes(manifest.body);
   return {
     version: normalizeVersionTag(manifest.tag_name),
-    releaseUrl: String(manifest.html_url ?? ""),
+    releaseUrl: assertAllowedRemoteUrl(
+      manifest.html_url,
+      config.allowedReleaseHosts,
+      "release url",
+    ),
     releaseLabel: String(manifest.tag_name ?? "GitHub Release"),
     notes,
     summary: notes[0] || DEFAULT_SUMMARY,
     downloads: normalizeDownloads(manifest.assets),
+    signature,
   };
 }
 

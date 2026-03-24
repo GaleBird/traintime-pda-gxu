@@ -6,6 +6,18 @@ const { StatsStore } = require("./stats-store");
 
 const statsStore = new StatsStore(config.statsFile);
 
+function logSecurityMode() {
+  if (config.manifestPublicKeyPem) {
+    console.log(
+      `manifest signature verification is configured (required=${config.requireManifestSignature})`,
+    );
+    return;
+  }
+  console.warn(
+    "manifest signature verification is disabled; set MANIFEST_PUBLIC_KEY_PEM to enable it",
+  );
+}
+
 function sendJson(res, statusCode, payload) {
   res.writeHead(statusCode, {
     "Content-Type": "application/json; charset=utf-8",
@@ -27,8 +39,8 @@ function sendError(res, statusCode, message) {
 }
 
 async function loadUpdateView() {
-  const manifest = await fetchManifest();
-  return buildUpdateView(manifest);
+  const { manifest, signature } = await fetchManifest();
+  return buildUpdateView(manifest, signature);
 }
 
 async function handleUpdate(res) {
@@ -103,6 +115,7 @@ function createHandler() {
 }
 
 const server = http.createServer(createHandler());
+logSecurityMode();
 server.listen(config.port, "127.0.0.1", () => {
   console.log(`gxu.app service listening on http://127.0.0.1:${config.port}`);
 });

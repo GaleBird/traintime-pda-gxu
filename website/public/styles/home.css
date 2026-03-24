@@ -123,6 +123,55 @@
   line-height: 1.62;
 }
 
+.signature-row {
+  display: grid;
+  gap: 8px;
+}
+
+.signature-chip {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in oklab, white 84%, var(--paper));
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.signature-chip[data-signature-state="verified"] {
+  border-color: oklch(0.73 0.08 150);
+  background: oklch(0.95 0.03 150);
+  color: oklch(0.45 0.08 150);
+}
+
+.signature-chip[data-signature-state="disabled"] {
+  border-color: var(--line);
+  background: color-mix(in oklab, white 84%, var(--paper));
+  color: var(--ink-soft);
+}
+
+.signature-chip[data-signature-state="invalid_signature"],
+.signature-chip[data-signature-state="missing_signature"],
+.signature-chip[data-signature-state="key_id_mismatch"],
+.signature-chip[data-signature-state="unsupported_algorithm"],
+.signature-chip[data-signature-state="verification_error"] {
+  border-color: oklch(0.7 0.12 22);
+  background: oklch(0.96 0.03 22);
+  color: oklch(0.5 0.12 22);
+}
+
+.signature-copy {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  line-height: 1.56;
+}
+
 .landing-section-head {
   margin: 0 0 18px;
 }

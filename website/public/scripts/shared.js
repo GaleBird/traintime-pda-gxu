@@ -6,6 +6,36 @@ const FALLBACK_DOWNLOADS = [
 
 const GALLERY_INTERVAL_MS = 3600;
 const numberFormatter = new Intl.NumberFormat("zh-CN");
+const SIGNATURE_COPY = {
+  verified: {
+    label: "已验签",
+    message: "当前清单已通过服务端验签。",
+  },
+  disabled: {
+    label: "未启用",
+    message: "当前官网未启用清单验签。",
+  },
+  missing_signature: {
+    label: "缺少签名",
+    message: "公钥已配置，但线上清单缺少签名。",
+  },
+  unsupported_algorithm: {
+    label: "算法不符",
+    message: "线上清单使用了当前服务不支持的签名算法。",
+  },
+  key_id_mismatch: {
+    label: "Key 不符",
+    message: "线上清单 key_id 与当前服务配置不一致。",
+  },
+  invalid_signature: {
+    label: "签名异常",
+    message: "线上清单签名与当前公钥不匹配。",
+  },
+  verification_error: {
+    label: "校验失败",
+    message: "服务端执行验签时发生异常。",
+  },
+};
 
 function setText(selector, value) {
   document.querySelectorAll(selector).forEach((element) => {
@@ -58,10 +88,29 @@ function renderUpdate(update) {
   setLink("[data-site-github-link]", "/download/github", "GitHub 备用下载");
   renderNotes(update.notes);
   renderDownloadMatrix(update.downloads);
+  renderSignature(update.signature);
 }
 
 function renderStats(stats) {
   setText("[data-site-download-total]", numberFormatter.format(stats.totalDownloads));
+}
+
+function renderSignature(signature) {
+  const status = signature?.status ?? "disabled";
+  const copy = SIGNATURE_COPY[status] ?? {
+    label: "状态未知",
+    message: signature?.message || "当前清单验签状态未知。",
+  };
+
+  document.querySelectorAll("[data-site-signature-status]").forEach((element) => {
+    element.textContent = copy.label;
+    element.dataset.signatureState = status;
+  });
+
+  setText(
+    "[data-site-signature-message]",
+    signature?.message || copy.message,
+  );
 }
 
 function markCurrentNav() {
@@ -158,6 +207,10 @@ function renderFailureState() {
   setLink("[data-site-release-link]", "/download/github", "备用下载");
   renderDownloadMatrix([]);
   renderNotes([]);
+  renderSignature({
+    status: "verification_error",
+    message: "当前无法读取线上清单，暂时无法判断签名状态。",
+  });
 }
 
 function loadSiteData() {
