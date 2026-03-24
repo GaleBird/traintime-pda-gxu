@@ -19,30 +19,37 @@ class GxuNetworkActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final textStyle = Theme.of(context).textTheme.labelMedium?.copyWith(
       fontWeight: FontWeight.w600,
-      fontSize: 12,
+      fontSize: 11.5,
+      height: 1.1,
     );
     final style = filled
         ? FilledButton.styleFrom(
-            minimumSize: const Size.fromHeight(58),
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+            minimumSize: const Size.fromHeight(60),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
             visualDensity: VisualDensity.compact,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             textStyle: textStyle,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
           )
         : OutlinedButton.styleFrom(
-            minimumSize: const Size.fromHeight(58),
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+            minimumSize: const Size.fromHeight(60),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
             visualDensity: VisualDensity.compact,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             textStyle: textStyle,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
           );
     final content = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 17),
-        const SizedBox(height: 4),
+        Icon(icon, size: 18),
+        const SizedBox(height: 5),
         SizedBox(
-          height: 14,
+          height: 15,
           child: AutoSizeText(
             label,
             maxLines: 1,

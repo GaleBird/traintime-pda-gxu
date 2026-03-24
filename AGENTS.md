@@ -87,6 +87,7 @@ Build examples:
 - GXU network detail refresh must release `gxuNetworkRefreshing` even on early exits such as missing query password or missing account, otherwise the refresh button stays disabled until app restart after the user fixes the input.
 - GXU dashboard parsing is label-based around `下次结算 / 已用流量 / 免费流量 / 可用流量 / 消费保护 / 账户余额`; if those labels disappear, surface an explicit page-structure error instead of silently faking data.
 - GXU 校园网详情页底部不再显示原来的注意提示卡或独立官网说明卡；操作区固定为单行三按钮（刷新 / 账号 / 官网），按钮采用“图标在上、文字在下”的紧凑布局以兼容小屏和大字体，按钮下方补充一行“当前为缓存信息、需手动刷新”的说明，并用系统浏览器跳转到 `http://self.gxu.edu.cn` 查看尚未接入的功能。
+- GXU 校园网详情页的 `Scaffold` 现关闭页面级键盘避让：底部“刷新 / 账号 / 官网”固定操作区不再跟随键盘整体上移；账号密码输入继续在 `SchoolNetPasswordDialog` 内处理键盘与滚动。
 - GXU 校园网详情页的底部操作区在无缓存、首次进入、首次刷新失败、缺少账号/密码等空状态下也必须继续显示；不要再把 `刷新 / 账号 / 官网` 入口只挂在“已有缓存内容”的分支里。
 - GXU 校园网无缓存空态卡片应保持纯说明用途，不要再在卡片内部重复放一个“刷新”按钮；空态正文需要可滚动，避免固定底部操作区出现后在短屏/分屏/大字号下把说明卡挤出或裁掉。
 - 设置页执行“清除缓存并重启”或“退出登录”时，除删除 `GxuNetworkUsage.json` 外，还要同步重置 `gxuNetworkInfo / gxuNetworkStatus / gxuNetworkRefreshing / gxuNetworkError`，避免重启前后或非重启路径短暂显示旧校园网缓存状态。

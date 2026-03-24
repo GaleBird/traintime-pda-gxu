@@ -112,31 +112,40 @@ class GxuNetworkInfo extends StatelessWidget {
   }
 
   Widget _buildActionButtons(BuildContext context, {required bool hasCache}) {
+    final theme = Theme.of(context);
     final hintKey = hasCache
         ? "school_net.gxu.cache_info_hint"
         : "school_net.gxu.manual_refresh_hint";
-    return GxuNetworkActionButtons(
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLow,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        border: Border(
+          top: BorderSide(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.75),
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.shadowColor.withValues(alpha: 0.06),
+            blurRadius: 14,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: GxuNetworkActionButtons(
           refreshing: gxuNetworkRefreshing.value,
           hintText: FlutterI18n.translate(context, hintKey),
           onRefresh: () => _refresh(context),
           onChangePassword: () => _showPasswordDialog(context),
           onOpenPortal: () => _openPortal(context),
-        )
-        .padding(horizontal: 16, vertical: 12)
-        .width(double.infinity)
-        .decorated(
-          color: Theme.of(context).colorScheme.surface,
-          border: Border(
-            top: BorderSide(
-              color: Theme.of(
-                context,
-              ).colorScheme.outlineVariant.withValues(alpha: 0.7),
-            ),
-          ),
-        )
-        .safeArea(top: false)
-        .constrained(maxWidth: sheetMaxWidth)
-        .center();
+        ),
+      ),
+    ).constrained(maxWidth: sheetMaxWidth).center();
   }
 
   Widget _buildOverviewCard(BuildContext context, GxuNetworkUsage usage) {

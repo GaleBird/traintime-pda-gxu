@@ -17,6 +17,7 @@ class _NetworkCardWindowState extends State<NetworkCardWindow> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text(FlutterI18n.translate(context, "school_net.title")),
       ),

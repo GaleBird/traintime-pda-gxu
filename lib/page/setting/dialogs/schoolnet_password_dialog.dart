@@ -55,6 +55,7 @@ class _SchoolNetPasswordDialogState extends State<SchoolNetPasswordDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: Text(
         FlutterI18n.translate(
           context,
