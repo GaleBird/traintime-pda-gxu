@@ -1,6 +1,8 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
+const gxuNetworkPrimaryActionColor = Color(0xFF355E95);
+
 class GxuNetworkActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -19,13 +21,18 @@ class GxuNetworkActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final textStyle = Theme.of(context).textTheme.labelMedium?.copyWith(
       fontWeight: FontWeight.w600,
-      fontSize: 11.5,
+      fontSize: 12,
       height: 1.1,
     );
+    final contentTextStyle = filled
+        ? textStyle?.copyWith(color: Colors.white)
+        : textStyle;
     final style = filled
         ? FilledButton.styleFrom(
-            minimumSize: const Size.fromHeight(60),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            backgroundColor: gxuNetworkPrimaryActionColor,
+            foregroundColor: Colors.white,
+            minimumSize: const Size.fromHeight(48),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             visualDensity: VisualDensity.compact,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             textStyle: textStyle,
@@ -34,22 +41,22 @@ class GxuNetworkActionButton extends StatelessWidget {
             ),
           )
         : OutlinedButton.styleFrom(
-            minimumSize: const Size.fromHeight(60),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            minimumSize: const Size.fromHeight(48),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             visualDensity: VisualDensity.compact,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             textStyle: textStyle,
+            backgroundColor: Theme.of(context).colorScheme.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),
             ),
           );
-    final content = Column(
-      mainAxisSize: MainAxisSize.min,
+    final content = Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(icon, size: 18),
-        const SizedBox(height: 5),
-        SizedBox(
-          height: 15,
+        Icon(icon, size: 16, color: filled ? Colors.white : null),
+        const SizedBox(width: 6),
+        Flexible(
           child: AutoSizeText(
             label,
             maxLines: 1,
@@ -57,7 +64,7 @@ class GxuNetworkActionButton extends StatelessWidget {
             stepGranularity: 0.5,
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
-            style: textStyle,
+            style: contentTextStyle,
           ),
         ),
       ],

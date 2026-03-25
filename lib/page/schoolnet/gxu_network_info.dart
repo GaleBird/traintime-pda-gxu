@@ -30,122 +30,144 @@ class GxuNetworkInfo extends StatelessWidget {
   });
 
   Widget _buildEmptyBody(BuildContext context) {
+    // ReloadWidget contains an internal Expanded; it must have bounded height.
+    // Placing it in a scroll view gives it unbounded height and crashes at runtime.
+    if (gxuNetworkStatus.value == SessionState.error) {
+      final errorWidget = isGxuSchoolnetCredentialError(gxuNetworkError.value)
+          ? ReloadWidget(
+              errorStatus: _resolveMessage(context, gxuNetworkError.value),
+              buttonName: FlutterI18n.translate(
+                context,
+                "setting.change_schoolnet_password_title",
+              ),
+              function: () => _showPasswordDialog(context),
+            )
+          : ReloadWidget(
+              errorStatus: _resolveMessage(context, gxuNetworkError.value),
+              function: () => _refresh(context),
+            );
+      return _buildBoundedBodyWithActions(context, body: errorWidget);
+    }
+
     final body = switch (gxuNetworkStatus.value) {
-      SessionState.fetching => const Center(child: CircularProgressIndicator()),
-      SessionState.error
-          when isGxuSchoolnetCredentialError(gxuNetworkError.value) =>
-        ReloadWidget(
-          errorStatus: _resolveMessage(context, gxuNetworkError.value),
-          buttonName: FlutterI18n.translate(
-            context,
-            "setting.change_schoolnet_password_title",
-          ),
-          function: () => _showPasswordDialog(context),
-        ),
-      SessionState.error => ReloadWidget(
-        errorStatus: _resolveMessage(context, gxuNetworkError.value),
-        function: () => _refresh(context),
+      SessionState.fetching => const SizedBox(
+        height: 180,
+        child: Center(child: CircularProgressIndicator()),
       ),
-      _ => const GxuNetworkNoCacheCard().padding(all: 12).scrollable(),
+      _ => const GxuNetworkNoCacheCard().padding(all: 12),
     };
-    return _buildPageLayout(context, body: body, hasCache: false);
+    return _buildScrollableBodyWithPinnedActions(context, body: body);
   }
 
   Widget _buildContent(BuildContext context, GxuNetworkUsage usage) {
-    return _buildPageLayout(
+    return _buildScrollablePage(
       context,
-      body:
-          [
-                if (gxuNetworkRefreshing.value)
-                  const LinearProgressIndicator()
-                      .clipRRect(all: 99)
-                      .padding(vertical: 2, horizontal: 4)
-                      .constrained(maxWidth: sheetMaxWidth)
-                      .center(),
-                if (gxuNetworkError.value.isNotEmpty)
-                  GxuNetworkStatusBanner(
-                        errorText: _resolveMessage(
-                          context,
-                          gxuNetworkError.value,
-                        ),
-                        isCredentialError: isGxuSchoolnetCredentialError(
-                          gxuNetworkError.value,
-                        ),
-                      )
-                      .padding(vertical: 4, horizontal: 4)
-                      .width(double.infinity)
-                      .constrained(maxWidth: sheetMaxWidth)
-                      .center(),
-                GxuNetworkSummaryCard(usage: usage)
-                    .padding(vertical: 2, horizontal: 4)
-                    .constrained(maxWidth: sheetMaxWidth)
-                    .center(),
-                _buildOverviewCard(context, usage)
-                    .padding(vertical: 2, horizontal: 4)
-                    .constrained(maxWidth: sheetMaxWidth)
-                    .center(),
-                _buildTrafficCard(context, usage)
-                    .padding(vertical: 2, horizontal: 4)
-                    .constrained(maxWidth: sheetMaxWidth)
-                    .center(),
-              ]
-              .toColumn(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.start,
-              )
-              .scrollable(padding: const EdgeInsets.all(12)),
-      hasCache: true,
-    );
-  }
-
-  Widget _buildPageLayout(
-    BuildContext context, {
-    required Widget body,
-    required bool hasCache,
-  }) {
-    return Column(
       children: [
-        Expanded(child: body),
-        _buildActionButtons(context, hasCache: hasCache),
+        if (gxuNetworkRefreshing.value)
+          _buildSection(
+            const LinearProgressIndicator().clipRRect(all: 99),
+            verticalPadding: 3,
+          ),
+        if (gxuNetworkError.value.isNotEmpty)
+          _buildSection(
+            GxuNetworkStatusBanner(
+              errorText: _resolveMessage(context, gxuNetworkError.value),
+              isCredentialError: isGxuSchoolnetCredentialError(
+                gxuNetworkError.value,
+              ),
+            ),
+            verticalPadding: 4,
+          ),
+        _buildSection(GxuNetworkSummaryCard(usage: usage)),
+        _buildSection(_buildOverviewCard(context, usage)),
+        _buildSection(_buildTrafficCard(context, usage)),
+        _buildActionButtons(context, hasCache: true),
       ],
     );
   }
 
+  Widget _buildScrollablePage(
+    BuildContext context, {
+    required List<Widget> children,
+  }) {
+    return children
+        .toColumn(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
+        )
+        .scrollable(
+          padding: EdgeInsets.fromLTRB(
+            12,
+            12,
+            12,
+            MediaQuery.paddingOf(context).bottom + 12,
+          ),
+        );
+  }
+
+  Widget _buildBoundedBodyWithActions(
+    BuildContext context, {
+    required Widget body,
+  }) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        12,
+        12,
+        12,
+        MediaQuery.paddingOf(context).bottom + 12,
+      ),
+      child: Column(
+        children: [
+          Expanded(child: _buildSection(body)),
+          _buildActionButtons(context, hasCache: false),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScrollableBodyWithPinnedActions(
+    BuildContext context, {
+    required Widget body,
+  }) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        12,
+        12,
+        12,
+        MediaQuery.paddingOf(context).bottom + 12,
+      ),
+      child: Column(
+        children: [
+          Expanded(child: SingleChildScrollView(child: _buildSection(body))),
+          _buildActionButtons(context, hasCache: false),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSection(Widget child, {double verticalPadding = 2}) {
+    return child
+        .padding(vertical: verticalPadding, horizontal: 4)
+        .width(double.infinity)
+        .constrained(maxWidth: sheetMaxWidth)
+        .center();
+  }
+
   Widget _buildActionButtons(BuildContext context, {required bool hasCache}) {
-    final theme = Theme.of(context);
     final hintKey = hasCache
         ? "school_net.gxu.cache_info_hint"
         : "school_net.gxu.manual_refresh_hint";
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        border: Border(
-          top: BorderSide(
-            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.75),
-          ),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.shadowColor.withValues(alpha: 0.06),
-            blurRadius: 14,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: GxuNetworkActionButtons(
+    return GxuNetworkActionButtons(
           refreshing: gxuNetworkRefreshing.value,
           hintText: FlutterI18n.translate(context, hintKey),
           onRefresh: () => _refresh(context),
           onChangePassword: () => _showPasswordDialog(context),
           onOpenPortal: () => _openPortal(context),
-        ),
-      ),
-    ).constrained(maxWidth: sheetMaxWidth).center();
+        )
+        .padding(top: 2, bottom: 4, horizontal: 4)
+        .width(double.infinity)
+        .constrained(maxWidth: sheetMaxWidth)
+        .center();
   }
 
   Widget _buildOverviewCard(BuildContext context, GxuNetworkUsage usage) {

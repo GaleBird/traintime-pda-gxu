@@ -10,6 +10,9 @@ import 'package:watermeter/page/schoolnet/gxu_network_formatter.dart';
 import 'package:watermeter/page/public_widget/public_widget.dart';
 
 const gxuNetworkPortalUrl = "http://self.gxu.edu.cn";
+const gxuNetworkHintBackgroundColor = Color(0xFFFFF4E5);
+const gxuNetworkHintBorderColor = Color(0xFFF3C06A);
+const gxuNetworkHintForegroundColor = Color(0xFFD97706);
 
 class GxuNetworkNoCacheCard extends StatelessWidget {
   const GxuNetworkNoCacheCard({super.key});
@@ -225,13 +228,31 @@ class GxuNetworkActionButtons extends StatelessWidget {
         ],
       ),
       const SizedBox(height: 10),
-      Text(
-        hintText,
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-          height: 1.35,
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: gxuNetworkHintBackgroundColor,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: gxuNetworkHintBorderColor),
         ),
+        child: [
+          const Icon(
+            Icons.info_outlined,
+            size: 18,
+            color: gxuNetworkHintForegroundColor,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              hintText,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: gxuNetworkHintForegroundColor,
+                height: 1.35,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ].toRow(crossAxisAlignment: CrossAxisAlignment.start),
       ),
     ].toColumn(crossAxisAlignment: CrossAxisAlignment.stretch);
   }
