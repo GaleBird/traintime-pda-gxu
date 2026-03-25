@@ -4,9 +4,11 @@
 
 class ForkInfo {
   static const String maintainer = 'KIKO';
-  static const String maintainerUrl = 'https://github.com/2484895358';
-  static const String repositoryOwner = '2484895358';
+  static const String maintainerUrl = 'https://github.com/GaleBird';
+  static const String repositoryOwner = 'GaleBird';
   static const String repositoryName = 'traintime_pda';
+  static const String officialWebsiteUrl = 'https://gxu.app';
+  static const String graduateSystemUrl = 'https://yjsxt.gxu.edu.cn/tp';
   static const String updateManifestUrl =
       'https://myapk.sgp1.cdn.digitaloceanspaces.com/manifests/update.json';
   static const String updateManifestKeyId = 'update-manifest-rsa-sha256-v1';

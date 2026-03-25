@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:watermeter/page/public_widget/toast.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:watermeter/repository/fork_info.dart';
 import 'package:watermeter/repository/logger.dart';
 import 'package:watermeter/repository/network_session.dart';
 
@@ -16,16 +18,57 @@ class ButtomButtons extends StatelessWidget {
 
   const ButtomButtons({super.key});
 
+  Future<void> _openLink(
+    BuildContext context, {
+    required String url,
+    required String errorKey,
+  }) async {
+    try {
+      final opened = await launchUrl(
+        Uri.parse(url),
+        mode: LaunchMode.externalApplication,
+      );
+      if (opened || !context.mounted) {
+        return;
+      }
+    } catch (_) {
+      if (!context.mounted) {
+        return;
+      }
+    }
+    showToast(context: context, msg: FlutterI18n.translate(context, errorKey));
+  }
+
+  Widget _buildActionButton(
+    BuildContext context, {
+    required String labelKey,
+    required VoidCallback onPressed,
+  }) {
+    return TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        visualDensity: VisualDensity.compact,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        minimumSize: Size.zero,
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      ),
+      child: Text(
+        FlutterI18n.translate(context, labelKey),
+        style: _bottomTextStyle,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Wrap(
       alignment: WrapAlignment.center,
+      spacing: 2,
+      runSpacing: 0,
       children: [
-        TextButton(
-          child: Text(
-            FlutterI18n.translate(context, "login.clear_cache"),
-            style: _bottomTextStyle,
-          ),
+        _buildActionButton(
+          context,
+          labelKey: "login.clear_cache",
           onPressed: () {
             NetworkSession().clearCookieJar().then((value) {
               if (context.mounted) {
@@ -40,11 +83,9 @@ class ButtomButtons extends StatelessWidget {
             });
           },
         ),
-        TextButton(
-          child: Text(
-            FlutterI18n.translate(context, "login.see_inspector"),
-            style: _bottomTextStyle,
-          ),
+        _buildActionButton(
+          context,
+          labelKey: "login.see_inspector",
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute(
@@ -52,6 +93,24 @@ class ButtomButtons extends StatelessWidget {
               ),
             );
           },
+        ),
+        _buildActionButton(
+          context,
+          labelKey: 'login.official_website',
+          onPressed: () => _openLink(
+            context,
+            url: ForkInfo.officialWebsiteUrl,
+            errorKey: 'login.failed_open_official_website',
+          ),
+        ),
+        _buildActionButton(
+          context,
+          labelKey: 'login.academic_system_website',
+          onPressed: () => _openLink(
+            context,
+            url: ForkInfo.graduateSystemUrl,
+            errorKey: 'login.failed_open_academic_system_website',
+          ),
         ),
       ],
     );

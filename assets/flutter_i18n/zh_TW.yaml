@@ -478,6 +478,10 @@ login:
   failed_login_with_message: 請求失敗，報錯信息：{message}
   failed_login_other: 未知錯誤，請聯繫開發者
   failed_open_forgot_password: 無法打開找回密碼頁面
+  official_website: 軟件官網
+  failed_open_official_website: 無法打開軟件官網
+  academic_system_website: 教務系統官網
+  failed_open_academic_system_website: 無法打開教務系統官網
   forgot_password_security_warning: 當前官方找回密碼入口會跳轉到非加密頁面。應用不會自動代填任何憑據；如需繼續，請僅在可信網絡環境下使用系統瀏覽器打開。
   clear_cache: 清除登錄緩存
   complete_clear_cache: 清理緩存成功
@@ -492,7 +496,7 @@ school_net:
   gxu:
     notice: 廣西大學網絡查詢走獨立的校園網自助系統，驗證碼識別失敗時會要求手動輸入。
     cached_notice: 這裡默認顯示上次成功查詢的緩存數據，不會在打開頁面時自動重新登錄。
-    manual_refresh_hint: 需要最新數據時再手動刷新；如果服務端要求驗證碼，會彈出輸入框。
+    manual_refresh_hint: 點擊刷新獲取最新數據，如需驗證會提示輸入驗證碼。
     http_warning: 注意：校園網自助系統使用 HTTP 明文傳輸，查詢密碼可能被竊聽。建議僅在可信網絡環境使用，並定期修改密碼。
     open_portal: 打開官網
     portal_open_failed: 打開校園網官網失敗
@@ -501,7 +505,7 @@ school_net:
     account: 賬號
     account_short: 賬號
     portal_short: 官網
-    cache_info_hint: 目前顯示的是緩存信息，需要最新數據時再手動刷新；如果服務端要求驗證碼，會彈出輸入框。
+    cache_info_hint: 默認顯示緩存數據；需要最新結果時再點刷新，如需驗證會提示輸入驗證碼。
     settlement: 下次結算
     used: 已用流量
     free: 免費流量
