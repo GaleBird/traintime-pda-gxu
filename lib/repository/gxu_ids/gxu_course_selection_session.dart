@@ -9,6 +9,7 @@ import 'package:watermeter/repository/gxu_ids/gxu_classtable_session.dart';
 import 'package:watermeter/repository/auth_exceptions.dart';
 import 'package:watermeter/repository/logger.dart';
 import 'package:watermeter/repository/network_session.dart';
+import 'package:watermeter/repository/security/corrupted_cache_recovery.dart';
 import 'package:watermeter/repository/preference.dart' as preference;
 import 'package:watermeter/repository/security/secure_file_store.dart';
 
@@ -56,16 +57,21 @@ class GxuCourseSelectionSession {
   }
 
   GxuCourseSelectionSheet? _loadCache() {
-    final rawText = _cacheStore.readAsStringSync();
-    if (rawText == null) {
-      return null;
-    }
-    final raw = jsonDecode(rawText);
-    if (raw is! Map) {
-      throw const LoginFailedException(msg: "广西大学选课缓存已损坏。");
-    }
-    return GxuCourseSelectionSheet.fromJson(
-      raw.map((key, value) => MapEntry(key.toString(), value)),
+    return loadRecoverableCache(
+      label: "gxu_course_selection",
+      file: file,
+      readRawText: _cacheStore.readAsStringSync,
+      decode: (rawText) {
+        final raw = jsonDecode(rawText);
+        if (raw is! Map) {
+          throw const FormatException(
+            "GXU course selection cache is corrupted.",
+          );
+        }
+        return GxuCourseSelectionSheet.fromJson(
+          raw.map((key, value) => MapEntry(key.toString(), value)),
+        );
+      },
     );
   }
 

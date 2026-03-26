@@ -526,6 +526,7 @@ login:
    forgot_password_security_warning: "The current official password recovery entry redirects to a non-encrypted page. The app will not autofill any credentials; continue only in a trusted network and open it with the system browser."
    clear_cache: "Clear cache"
    complete_clear_cache: "Cache cleared successfully"
+   partial_clear_cache: "Some caches could not be cleared: {details}"
    see_inspector: "View network interaction"
    captcha_window:
       title: "Please enter captcha"

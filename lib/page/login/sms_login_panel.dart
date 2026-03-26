@@ -38,7 +38,7 @@ class _SmsLoginPanelState extends State<SmsLoginPanel> {
 
   Timer? _smsTimer;
   int _countdownSeconds = 0;
-  bool _obscureCode = true;
+  bool _obscureCode = false;
 
   @override
   void dispose() {

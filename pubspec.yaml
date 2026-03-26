@@ -1,7 +1,7 @@
 name: watermeter
 description: Course schedule assistant for GXU.
 publish_to: "none"
-version: 1.0.3+46
+version: 1.0.4+47
 
 environment:
   sdk: ^3.8.0

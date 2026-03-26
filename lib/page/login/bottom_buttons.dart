@@ -7,9 +7,9 @@ import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:watermeter/page/public_widget/toast.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:watermeter/repository/cookie_cleanup.dart';
 import 'package:watermeter/repository/fork_info.dart';
 import 'package:watermeter/repository/logger.dart';
-import 'package:watermeter/repository/network_session.dart';
 
 class ButtomButtons extends StatelessWidget {
   final Color _bottomTextColor = const Color.fromRGBO(35, 62, 99, 0.5);
@@ -37,6 +37,21 @@ class ButtomButtons extends StatelessWidget {
       }
     }
     showToast(context: context, msg: FlutterI18n.translate(context, errorKey));
+  }
+
+  Future<void> _clearCookies(BuildContext context) async {
+    final result = await clearAllCookies();
+    if (!context.mounted) {
+      return;
+    }
+    final message = result.hasFailures
+        ? FlutterI18n.translate(
+            context,
+            "login.partial_clear_cache",
+            translationParams: {"details": result.summary()},
+          )
+        : FlutterI18n.translate(context, "login.complete_clear_cache");
+    showToast(context: context, msg: message);
   }
 
   Widget _buildActionButton(
@@ -69,19 +84,7 @@ class ButtomButtons extends StatelessWidget {
         _buildActionButton(
           context,
           labelKey: "login.clear_cache",
-          onPressed: () {
-            NetworkSession().clearCookieJar().then((value) {
-              if (context.mounted) {
-                showToast(
-                  context: context,
-                  msg: FlutterI18n.translate(
-                    context,
-                    "login.complete_clear_cache",
-                  ),
-                );
-              }
-            });
-          },
+          onPressed: () => _clearCookies(context),
         ),
         _buildActionButton(
           context,

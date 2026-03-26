@@ -70,7 +70,7 @@ Build examples:
 - `LoginWindow` is GXU-only again and should log in through `GxuCASession` directly; the temporary school-mode selector and XDU login branch have been removed.
 - `LoginWindow` 现支持“账号密码 / 短信验证码”两种统一认证登录：短信发送与短信提交都必须在 `GxuCASession` 内部先清空旧 Cookie，再走新的统一认证会话；短信登录手机号只在登录成功后写入 `Preference.gxuCaPhone`，并会清理旧 `idsAccount` / `idsPassword`，当 Cookie 过期且缺少账号/密码时，`GxuCASession.ensureYjsxtLoggedIn` 会显式报错提示重新登录。
 - `Preference.gxuCaPhone` 与 `Preference.schoolNetQueryAccount` 现按敏感字符串走 `flutter_secure_storage`，不要再放回普通 SharedPreferences。
-- 短信登录里的短信验证码输入框恢复为默认隐藏、可切换显示，避免旁观/录屏场景下直接暴露验证码。
+- 短信登录里的短信验证码输入框默认明文显示，并保留可切换隐藏；不要再改回默认隐藏，避免一次性验证码输入时增加核对成本和输错率。
 - 登录页“忘记密码”入口当前指向的官方链路会上游跳转到非加密页面；应用侧只允许在弹出安全提示后用系统浏览器继续打开，不要再恢复成一键静默直开。
 - Login branding is GXU-only now: the login page header no longer shows the old app icon or text header, and instead uses the transparent SVG asset `assets/gxu_name.svg` derived from the repo-root `name.svg`. Keep the login page background plain and avoid reintroducing the rejected gradient/glow treatment.
 - The login page should use a fixed non-scroll layout, keep the whole content block slightly higher on the screen instead of vertically centering it, and still subtract `viewInsets.bottom` from the portrait visible height so short screens keep the login button reachable above the keyboard. Password login uses explicit focus-node handoff from account to password so the keyboard `下一项` button does not dismiss the keyboard, password/SMS-code fields trigger login from the keyboard action button, and password login keeps the original GXU behavior of always persisting `idsAccount` and `idsPassword` after a successful login.
@@ -184,3 +184,5 @@ Build examples:
 - “知道更多”页改为“项目来源优先”的简洁结构：首屏只说明当前 GXU 版本与上游 `Traintime PDA / XDYou` 的关系，再展示当前仓库、上游仓库、开源许可和非官方说明；不要再做成维护者展示页。
 - 关于页致谢区改为纯文字表达，使用“感谢原开发团队与贡献者”这类文案即可；不要再恢复贡献者头像墙或把这块写成“当前 GXU 版本全部由这些人共同维护”的表述。
 - README 首屏与 App 关于页统一按“GXU 独立维护线”对外呈现：明确当前版本面向广西大学研究生、明确标注上游项目名 `Traintime PDA / XDYou`，同时保留 LICENSE 与源码版权头说明；App 关于页不再做维护者优先展示。仓库独立化历史处理使用 `tool/create_standalone_history.ps1`，不要在脏工作区直接手改主分支历史。
+- GXU 成绩页与选课页读取本地加密缓存时，若检测到缓存损坏，必须删除坏缓存并继续走远端拉取；不要再让损坏缓存把页面永久卡在错误态，手动刷新也应能恢复。
+- 登录页“清除登录缓存”必须清理 GXU 统一认证与 GXU 校园网等会话 Cookie，而不只是旧的 `NetworkSession`；若部分 Cookie 仓删除失败，要显式提示失败摘要，不能继续提示“清理成功”。

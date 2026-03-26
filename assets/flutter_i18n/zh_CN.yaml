@@ -517,6 +517,7 @@ login:
     forgot_password_security_warning: "当前官方找回密码入口会跳转到非加密页面。应用不会自动代填任何凭据；如需继续，请仅在可信网络环境下使用系统浏览器打开。"
     clear_cache: "清除登录缓存"
     complete_clear_cache: "清理缓存成功"
+    partial_clear_cache: "部分缓存清理失败：{details}"
     see_inspector: "查看网络交互"
     captcha_window:
         title: "请输入验证码"

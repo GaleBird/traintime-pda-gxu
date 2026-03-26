@@ -485,6 +485,7 @@ login:
   forgot_password_security_warning: 當前官方找回密碼入口會跳轉到非加密頁面。應用不會自動代填任何憑據；如需繼續，請僅在可信網絡環境下使用系統瀏覽器打開。
   clear_cache: 清除登錄緩存
   complete_clear_cache: 清理緩存成功
+  partial_clear_cache: 部分緩存清理失敗：{details}
   see_inspector: 查看網絡交互
   captcha_window:
     title: 請輸入驗證碼

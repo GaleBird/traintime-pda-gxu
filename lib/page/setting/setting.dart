@@ -42,6 +42,7 @@ import 'package:watermeter/repository/preference.dart' as preference;
 import 'package:watermeter/page/setting/dialogs/electricity_password_dialog.dart';
 import 'package:watermeter/page/setting/dialogs/sport_password_dialog.dart';
 import 'package:watermeter/page/setting/dialogs/change_swift_dialog.dart';
+import 'package:watermeter/repository/cookie_cleanup.dart';
 import 'package:watermeter/repository/network_session.dart';
 import 'package:watermeter/repository/xidian_ids/classtable_session.dart';
 import 'package:watermeter/repository/xidian_ids/electricity_session.dart'
