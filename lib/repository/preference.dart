@@ -116,6 +116,10 @@ enum Preference {
     key: "emptyClassroomLastChoice",
     type: "String",
   ), // 空闲教室最后一次选择
+  gxuEmptyClassroomQuery(
+    key: "gxuEmptyClassroomQuery",
+    type: "String",
+  ), // GXU 空教室最近一次筛选条件
   enableCourseReminder(key: "enableCourseReminder", type: "bool"), // 课程提醒开关
   courseReminderMinutesBefore(
     key: "courseReminderMinutesBefore",

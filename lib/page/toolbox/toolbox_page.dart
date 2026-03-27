@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:ming_cute_icons/ming_cute_icons.dart';
 import 'package:watermeter/model/toolbox_addresses.dart';
+import 'package:watermeter/page/empty_classroom/empty_classroom_window.dart';
 import 'package:watermeter/page/schoolnet/network_card_window.dart';
 import 'package:watermeter/page/toolbox/unfinished_feature_page.dart';
 import 'package:watermeter/page/toolbox/webview_list_tile.dart';
@@ -23,6 +24,15 @@ class ToolBoxPage extends StatelessWidget {
         ),
         iconData: MingCuteIcons.mgc_wifi_line,
         pageBuilder: (context) => const NetworkCardWindow(),
+      ),
+      WebViewAddresses(
+        name: FlutterI18n.translate(context, "toolbox.empty_classroom"),
+        description: FlutterI18n.translate(
+          context,
+          "toolbox.empty_classroom_description",
+        ),
+        iconData: MingCuteIcons.mgc_building_2_line,
+        pageBuilder: (context) => const EmptyClassroomWindow(),
       ),
       ..._buildUnfinishedAddresses(context),
     ];

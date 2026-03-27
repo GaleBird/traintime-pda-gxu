@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'package:html/dom.dart';
 import 'package:html/parser.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:watermeter/repository/auth_exceptions.dart';
@@ -46,6 +47,28 @@ class GxuCASession {
             status != null && status >= 200 && status < 400;
 
   Future<void> clearCookieJar() => cookieJar.deleteAll();
+
+  Future<Uri?> resolvePortalItemUri(String permItemUrl) async {
+    final response = await dio.get("$yjsxtBase/view?m=up");
+    if (response.headers.value(HttpHeaders.locationHeader) != null) {
+      return null;
+    }
+    final document = parse(response.data.toString());
+    final item = _findPortalItem(document, permItemUrl);
+    if (item == null) {
+      return null;
+    }
+    final baseUri = Uri.parse("$yjsxtBase/");
+    final directUrl = _portalItemDirectUrl(item);
+    if (directUrl != null) {
+      return baseUri.resolve(directUrl);
+    }
+    final itemId = _portalItemId(item);
+    if (itemId == null) {
+      return null;
+    }
+    return baseUri.resolve("$permItemUrl?item_id=$itemId");
+  }
 
   Future<bool> isYjsxtLoggedIn() => _lock.synchronized(_isLoggedIn);
 
@@ -323,6 +346,60 @@ class GxuCASession {
       throw const PasswordWrongException(msg: "用户名或密码有误");
     }
     throw LoginFailedException(msg: text?.substring(0, 40) ?? "登录失败");
+  }
+
+  Element? _findPortalItem(Document document, String permItemUrl) {
+    for (final element in document.querySelectorAll("[perm_item_url]")) {
+      if (element.attributes["perm_item_url"]?.trim() == permItemUrl) {
+        return element;
+      }
+    }
+    return null;
+  }
+
+  String? _portalItemDirectUrl(Element item) {
+    for (final key in [
+      "url",
+      "href",
+      "data-url",
+      "menu_url",
+      "target_url",
+      "perm_url",
+    ]) {
+      final value = item.attributes[key]?.trim() ?? "";
+      if (_isUsablePortalUrl(value)) {
+        return value;
+      }
+    }
+    for (final descendant in item.querySelectorAll("[href],[url],[data-url]")) {
+      final value =
+          descendant.attributes["href"]?.trim() ??
+          descendant.attributes["url"]?.trim() ??
+          descendant.attributes["data-url"]?.trim() ??
+          "";
+      if (_isUsablePortalUrl(value)) {
+        return value;
+      }
+    }
+    return null;
+  }
+
+  String? _portalItemId(Element item) {
+    for (final key in ["item_id", "itemid", "data-item-id", "menu_id"]) {
+      final value = item.attributes[key]?.trim() ?? "";
+      if (value.isNotEmpty) {
+        return value;
+      }
+    }
+    return null;
+  }
+
+  bool _isUsablePortalUrl(String value) {
+    final normalized = value.trim().toLowerCase();
+    if (normalized.isEmpty || normalized == "#") {
+      return false;
+    }
+    return !normalized.startsWith("javascript:");
   }
 }
 

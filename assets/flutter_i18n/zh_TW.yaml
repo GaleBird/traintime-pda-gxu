@@ -253,6 +253,56 @@ empty_classroom:
   classroom: 教室
   empty: 空閒
   occupied: 佔用
+  filters: 篩選條件
+  query_hint: 先選學期和時間範圍，再按需縮小到教學樓或具體教室。
+  query: 查詢空教室
+  semester_hint: 先確認學期，下面週次會按該學期範圍顯示
+  range_title: 時間範圍
+  range_hint: 開始和結束各選一個值；只查單週、單天或單節時，兩邊選同一個即可
+  week_start: 開始週次
+  week_end: 結束週次
+  weekday_start: 開始星期
+  weekday_end: 結束星期
+  period_start: 開始節次
+  period_end: 結束節次
+  range_week: 週次範圍
+  range_week_hint: 由開始週到結束週；只查單週時，兩邊選同一週即可
+  range_weekday: 星期範圍
+  range_weekday_hint: 例如星期一到星期五；只查某一天時，兩邊選同一天
+  range_period: 節次範圍
+  range_period_hint: 例如第1節到第4節；只查單節時，兩邊選同一節
+  range_start: 開始
+  range_end: 結束
+  building_hint: 建議先選教學樓，查詢更快，結果也更好找
+  classroom_hint: 可繼續縮小到具體教室；不選則顯示當前範圍內全部教室
+  advanced_filters: 更多條件
+  advanced_filters_hint: 佔用情況、座位數等可選條件
+  seat_min: 最少座位
+  seat_max: 最多座位
+  optional: 可不填
+  date_overview: 日期 {date}
+  room_count: '{count} 間教室'
+  slot_count: '{count} 個空閒節次'
+  fetched_at: 查詢於 {time}
+  local_search_hint: 篩選當前結果中的教室名
+  option_search_hint: 搜索篩選項
+  option_empty: 沒有匹配的選項
+  clear_selection: 清空選擇
+  query_failed: 空教室查詢失敗
+  result_idle_title: 還沒有開始查詢
+  result_idle_hint: 先在上方選好學期、時間範圍和教學樓，再點「查詢空教室」。
+  no_result: 當前條件下沒有找到可展示的教室
+  no_result_with_keyword: 沒有找到「{keyword}」相關教室
+  result_title: 查詢結果
+  result_hint: 已顯示 {shown} / {total} 間教室；搜索只篩選當前結果，不會重新請求
+  result_search_hint: 在當前結果裡搜索教室、教學樓或佔用資訊
+  view_label: 查看方式
+  view_week: 按週次
+  view_weekday: 按星期
+  view_period: 按節次
+  cell_hint: 點節次塊可以查看佔用詳情
+  load_more: 繼續加載（{shown} / {total}）
+  detail_title: 佔用詳情
 exam:
   title: 考試安排
   cache_hint: 已顯示緩存考試安排信息
@@ -1055,6 +1105,8 @@ toolbox:
   physics_description: 希望操作順利
   discover: 睿思導航
   discover_description: 補充其他功能
+  empty_classroom: 空閒教室
+  empty_classroom_description: 研究生系統原生空教室查詢
 xdu_planet:
   all: 全部
   loading: 加載中，請稍等 <(=ω=)>
