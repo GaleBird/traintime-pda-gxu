@@ -256,19 +256,16 @@ void main() {
       expect(rows.first.availableCount, 2);
       expect(rows[1].cells.last.state, GxuEmptyClassroomCellState.occupied);
       expect(rows[1].cells.last.shortLabel, "排课");
-      expect(rows.last.cells.first.state, GxuEmptyClassroomCellState.unavailable);
+      expect(
+        rows.last.cells.first.state,
+        GxuEmptyClassroomCellState.unavailable,
+      );
       expect(rows.last.cells.first.localDetailMessage, "本科设置为不可用教室");
     });
 
     test("parseDetailPayload joins all returned detail lines", () {
       final detail = parser.parseDetailPayload({
-        "data": {
-          "jk": "研究生场地冲突",
-          "ks": "",
-          "jy": "预约场地冲突",
-          "tk": "",
-          "qt": "",
-        },
+        "data": {"jk": "研究生场地冲突", "ks": "", "jy": "预约场地冲突", "tk": "", "qt": ""},
       });
 
       expect(detail, contains("排课信息：研究生场地冲突"));

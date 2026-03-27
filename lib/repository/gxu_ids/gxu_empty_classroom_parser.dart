@@ -86,7 +86,7 @@ class GxuEmptyClassroomParser {
     }
     return GxuEmptyClassroomSelectField(
       name: name,
-      label: label.isEmpty ? name : label.replaceAll(":", ""),
+      label: label.isEmpty ? name : label.replaceAll(RegExp(r"[:：]"), ""),
       options: [
         for (final option in select.querySelectorAll("option"))
           GxuEmptyClassroomOption(
@@ -106,7 +106,7 @@ class GxuEmptyClassroomParser {
     }
     return GxuEmptyClassroomTextField(
       name: name,
-      label: label.isEmpty ? name : label.replaceAll(":", ""),
+      label: label.isEmpty ? name : label.replaceAll(RegExp(r"[:：]"), ""),
       value: input.attributes["value"]?.trim() ?? "",
       isNumeric: true,
     );
@@ -163,9 +163,7 @@ class GxuEmptyClassroomParser {
     if (data is! List) {
       throw LoginFailedException(msg: "广西大学$scene接口返回的 data 不是列表。");
     }
-    return [
-      for (final item in data) _mapOf(item, scene: scene),
-    ];
+    return [for (final item in data) _mapOf(item, scene: scene)];
   }
 
   Map<String, dynamic> _mapOf(dynamic value, {required String scene}) {

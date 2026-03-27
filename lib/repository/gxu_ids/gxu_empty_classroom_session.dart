@@ -56,7 +56,9 @@ class GxuEmptyClassroomSession {
       ),
       scene: "空教室查询结果",
     );
-    return parser.parseResultPayload(response.data);
+    final result = parser.parseResultPayload(response.data);
+    _ensureResultViewTypeCompatible(result: result, viewType: form.viewType);
+    return result;
   }
 
   Future<String> loadCellDetail({
@@ -97,6 +99,106 @@ class GxuEmptyClassroomSession {
     );
   }
 
+  void _ensureResultViewTypeCompatible({
+    required GxuEmptyClassroomResult result,
+    required GxuEmptyClassroomViewType viewType,
+  }) {
+    final rooms = result.rooms;
+    var hasAnyKey = false;
+    var hasWeekKey = false;
+    var hasWeekdayKey = false;
+    var hasPeriodKey = false;
+
+    for (final room in rooms) {
+      if (!hasAnyKey &&
+          (room.schedule.isNotEmpty ||
+              room.exam.isNotEmpty ||
+              room.borrow.isNotEmpty ||
+              room.adjust.isNotEmpty ||
+              room.other.isNotEmpty)) {
+        hasAnyKey = true;
+      }
+      if (hasWeekKey && hasWeekdayKey && hasPeriodKey) {
+        break;
+      }
+      void scanKeys(Iterable<String> keys) {
+        for (final key in keys) {
+          if (!hasWeekKey && key.startsWith("zc")) {
+            hasWeekKey = true;
+          } else if (!hasWeekdayKey && key.startsWith("xq")) {
+            hasWeekdayKey = true;
+          } else if (!hasPeriodKey && key.startsWith("jc")) {
+            hasPeriodKey = true;
+          }
+          if (hasWeekKey && hasWeekdayKey && hasPeriodKey) {
+            return;
+          }
+        }
+      }
+
+      scanKeys(room.schedule.keys);
+      scanKeys(room.exam.keys);
+      scanKeys(room.borrow.keys);
+      scanKeys(room.adjust.keys);
+      scanKeys(room.other.keys);
+    }
+
+    if (!hasAnyKey) {
+      return;
+    }
+
+    final supportsSelected = switch (viewType) {
+      GxuEmptyClassroomViewType.week => hasWeekKey,
+      GxuEmptyClassroomViewType.weekday => hasWeekdayKey,
+      GxuEmptyClassroomViewType.period => hasPeriodKey,
+    };
+    if (supportsSelected) {
+      return;
+    }
+
+    final supported = <String>[
+      if (hasWeekKey) "按周次",
+      if (hasWeekdayKey) "按星期",
+      if (hasPeriodKey) "按节次",
+    ];
+    final selectedLabel = switch (viewType) {
+      GxuEmptyClassroomViewType.week => "按周次",
+      GxuEmptyClassroomViewType.weekday => "按星期",
+      GxuEmptyClassroomViewType.period => "按节次",
+    };
+    final suggestion = supported.isEmpty ? "按节次" : supported.join(" / ");
+    final sampleKeys = _sampleResultKeys(rooms);
+    final hint = sampleKeys.isEmpty ? "" : "（接口键示例：$sampleKeys）";
+    throw LoginFailedException(
+      msg:
+          "空教室查询结果缺少「$selectedLabel」所需数据，无法保证准确性；请切换查看方式为：$suggestion 后重新查询。$hint",
+    );
+  }
+
+  String _sampleResultKeys(List<GxuEmptyClassroomRemoteRoom> rooms) {
+    final keys = <String>[];
+    void addKeys(Iterable<String> source) {
+      for (final key in source) {
+        if (keys.length >= 6) {
+          return;
+        }
+        keys.add(key);
+      }
+    }
+
+    for (final room in rooms) {
+      addKeys(room.schedule.keys);
+      addKeys(room.exam.keys);
+      addKeys(room.borrow.keys);
+      addKeys(room.adjust.keys);
+      addKeys(room.other.keys);
+      if (keys.length >= 6) {
+        break;
+      }
+    }
+    return keys.join(", ");
+  }
+
   Future<Response<dynamic>> _request(
     Future<Response<dynamic>> Function() action, {
     required String scene,
@@ -124,7 +226,10 @@ class GxuEmptyClassroomSession {
     return html;
   }
 
-  void _ensureNotLoggedOut(Response<dynamic> response, {required String scene}) {
+  void _ensureNotLoggedOut(
+    Response<dynamic> response, {
+    required String scene,
+  }) {
     final redirectTarget = response.headers.value(HttpHeaders.locationHeader);
     if (redirectTarget != null && redirectTarget.isNotEmpty) {
       throw LoginFailedException(msg: "广西大学$scene要求重新登录。");
@@ -149,7 +254,8 @@ class GxuEmptyClassroomSession {
   Options _ajaxOptions() {
     return Options(
       headers: {
-        HttpHeaders.acceptHeader: "application/json, text/javascript, */*; q=0.01",
+        HttpHeaders.acceptHeader:
+            "application/json, text/javascript, */*; q=0.01",
         HttpHeaders.refererHeader: "$_baseUrl$_portalRefererPath",
         "Origin": "https://yjsxt.gxu.edu.cn",
         "X-Requested-With": "XMLHttpRequest",

@@ -353,7 +353,7 @@ class _ClassroomCard extends StatelessWidget {
                 ),
                 _AvailabilityBadge(
                   availableCount: row.availableCount,
-                  totalCount: row.cells.length,
+                  totalCount: row.totalCount,
                 ),
               ],
             ),

@@ -27,6 +27,7 @@ class GxuEmptyClassroomState extends ChangeNotifier {
   List<GxuEmptyClassroomRow> _baseRows = const [];
   List<GxuEmptyClassroomRow> _filteredRows = const [];
   final Map<String, String> _detailCache = {};
+  int _resultRequestId = 0;
 
   GxuEmptyClassroomState({GxuEmptyClassroomSession? session})
     : session = session ?? GxuEmptyClassroomSession();
@@ -75,16 +76,30 @@ class GxuEmptyClassroomState extends ChangeNotifier {
     if (currentForm == null) {
       return;
     }
+    final validationError = _validateQueryForm(currentForm);
+    if (validationError != null) {
+      resultState = SessionState.error;
+      resultError = validationError;
+      notifyListeners();
+      return;
+    }
+    final requestId = ++_resultRequestId;
     resultState = SessionState.fetching;
     resultError = null;
     notifyListeners();
     try {
       result = await session.search(currentForm);
+      if (_disposed || requestId != _resultRequestId) {
+        return;
+      }
       _detailCache.clear();
       _rebuildRows(resetVisibleCount: true);
       resultState = SessionState.fetched;
       _persistForm(currentForm);
     } catch (error, stackTrace) {
+      if (_disposed || requestId != _resultRequestId) {
+        return;
+      }
       log.error(
         "[GxuEmptyClassroomState] Failed to query empty classroom.",
         error,
@@ -137,10 +152,22 @@ class GxuEmptyClassroomState extends ChangeNotifier {
     if (currentForm == null || currentForm.viewType == value) {
       return;
     }
+    final hadResult = result != null;
     form = currentForm.updateViewType(value);
+    if (hadResult) {
+      // Result payload shape may depend on view type; clear stale rows to avoid
+      // marking unknown slots as "空闲".
+      result = null;
+      resultState = SessionState.none;
+      resultError = null;
+      _detailCache.clear();
+    }
     _rebuildRows(resetVisibleCount: true);
     _persistForm(form!);
     notifyListeners();
+    if (hadResult) {
+      unawaited(refreshResults());
+    }
   }
 
   set searchKeyword(String value) {
@@ -255,5 +282,51 @@ class GxuEmptyClassroomState extends ChangeNotifier {
 
   String _detailCacheKey(GxuEmptyClassroomCell cell) {
     return "${cell.viewType.preferenceValue}:${cell.roomId}:${cell.slotNumber}";
+  }
+
+  String? _validateQueryForm(GxuEmptyClassroomQueryForm form) {
+    final weekError = _validateIntRange(
+      form,
+      startName: "kszc",
+      endName: "jszc",
+      label: "周次",
+    );
+    if (weekError != null) {
+      return weekError;
+    }
+    final weekdayError = _validateIntRange(
+      form,
+      startName: "ksxq",
+      endName: "jsxq",
+      label: "星期",
+    );
+    if (weekdayError != null) {
+      return weekdayError;
+    }
+    return _validateIntRange(
+      form,
+      startName: "ksjc",
+      endName: "jsjc",
+      label: "节次",
+    );
+  }
+
+  String? _validateIntRange(
+    GxuEmptyClassroomQueryForm form, {
+    required String startName,
+    required String endName,
+    required String label,
+  }) {
+    final startText = form.selectField(startName)?.selectedValue ?? "";
+    final endText = form.selectField(endName)?.selectedValue ?? "";
+    final start = int.tryParse(startText);
+    final end = int.tryParse(endText);
+    if (start == null || end == null) {
+      return "$label范围缺少开始或结束值，请重新选择。";
+    }
+    if (start > end) {
+      return "$label范围选择不合法：开始值不能大于结束值。";
+    }
+    return null;
   }
 }

@@ -34,31 +34,32 @@ class _GxuEmptyClassroomPageState extends State<GxuEmptyClassroomPage> {
       return const SizedBox.shrink();
     }
     _syncSearchController(state.searchKeyword);
-    return RefreshIndicator(
-      onRefresh: state.refreshResults,
-      child: Align(
-        alignment: Alignment.topCenter,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 860),
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-            children: [
-              GxuEmptyClassroomFilterPanel(form: form, state: state),
-              if (state.result != null) ...[
-                const SizedBox(height: 12),
-                GxuEmptyClassroomOverviewPanel(state: state, form: form),
-              ],
+    final content = Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 860),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          children: [
+            GxuEmptyClassroomFilterPanel(form: form, state: state),
+            if (state.result != null) ...[
               const SizedBox(height: 12),
-              GxuEmptyClassroomResultSection(
-                state: state,
-                searchController: _searchController,
-              ),
+              GxuEmptyClassroomOverviewPanel(state: state, form: form),
             ],
-          ),
+            const SizedBox(height: 12),
+            GxuEmptyClassroomResultSection(
+              state: state,
+              searchController: _searchController,
+            ),
+          ],
         ),
       ),
     );
+    if (state.result == null) {
+      return content;
+    }
+    return RefreshIndicator(onRefresh: state.refreshResults, child: content);
   }
 
   void _syncSearchController(String value) {

@@ -105,9 +105,13 @@ class GxuEmptyClassroomSelectField {
   }
 
   List<String> get selectedLabels {
+    if (selectedValues.isEmpty || options.isEmpty) {
+      return const [];
+    }
+    final selected = selectedValues.toSet();
     final labels = <String>[];
     for (final option in options) {
-      if (selectedValues.contains(option.value)) {
+      if (selected.contains(option.value)) {
         labels.add(option.label);
       }
     }
@@ -115,6 +119,9 @@ class GxuEmptyClassroomSelectField {
   }
 
   String get displayText {
+    if (selectedValues.isEmpty) {
+      return "请选择";
+    }
     final labels = selectedLabels;
     if (labels.isEmpty) {
       return "请选择";
@@ -301,6 +308,7 @@ class GxuEmptyClassroomQueryForm {
 
   Map<String, String> toPayload() {
     return {
+      "type": viewType.remoteType.toString(),
       for (final field in selectFields)
         field.name: field.isMulti
             ? field.selectedValues.join(",")
@@ -469,18 +477,44 @@ class GxuEmptyClassroomCell {
 class GxuEmptyClassroomRow {
   final String title;
   final String subtitle;
-  final List<GxuEmptyClassroomCell> cells;
+  final int totalCount;
   final int availableCount;
   final int occupiedCount;
   final String _searchText;
+  final GxuEmptyClassroomRemoteRoom _room;
+  final List<int> _range;
+  final GxuEmptyClassroomViewType _viewType;
+  List<GxuEmptyClassroomCell>? _cells;
 
   GxuEmptyClassroomRow({
     required this.title,
     required this.subtitle,
-    required this.cells,
-  }) : availableCount = _availableCountOf(cells),
-       occupiedCount = _occupiedCountOf(cells),
-       _searchText = _buildSearchText(title, subtitle, cells);
+    required this.totalCount,
+    required this.availableCount,
+    required this.occupiedCount,
+    required GxuEmptyClassroomRemoteRoom room,
+    required List<int> range,
+    required GxuEmptyClassroomViewType viewType,
+    String extraSearchText = "",
+  }) : _searchText = _normalizeText(
+         "$title $subtitle $extraSearchText",
+       ).toLowerCase(),
+       _room = room,
+       _range = range,
+       _viewType = viewType;
+
+  List<GxuEmptyClassroomCell> get cells {
+    final cached = _cells;
+    if (cached != null) {
+      return cached;
+    }
+    final built = [
+      for (final slot in _range)
+        _room.buildCell(slotNumber: slot, viewType: _viewType),
+    ];
+    _cells = built;
+    return built;
+  }
 
   bool matchesKeyword(String keyword) {
     final normalized = _normalizeText(keyword).toLowerCase();
@@ -490,30 +524,8 @@ class GxuEmptyClassroomRow {
     return _searchText.contains(normalized);
   }
 
-  static int _availableCountOf(List<GxuEmptyClassroomCell> cells) {
-    return cells.where((cell) => cell.isAvailable).length;
-  }
-
-  static int _occupiedCountOf(List<GxuEmptyClassroomCell> cells) {
-    return cells
-        .where((cell) => cell.state == GxuEmptyClassroomCellState.occupied)
-        .length;
-  }
-
-  static String _buildSearchText(
-    String title,
-    String subtitle,
-    List<GxuEmptyClassroomCell> cells,
-  ) {
-    return _normalizeText(
-      [
-        title,
-        subtitle,
-        for (final cell in cells) cell.header,
-        for (final cell in cells) cell.value,
-      ].join(" "),
-    ).toLowerCase();
-  }
+  // Cells are built lazily for visible rows only; local search only uses
+  // title/subtitle to avoid constructing thousands of status chips.
 }
 
 class GxuEmptyClassroomRemoteRoom {
@@ -564,19 +576,7 @@ class GxuEmptyClassroomRemoteRoom {
     required GxuEmptyClassroomViewType viewType,
   }) {
     final key = viewType.keyOf(slotNumber);
-    final fragments = _buildOccupationFragments(key);
     final unavailableMessage = _localUnavailableMessage();
-    if (fragments.isNotEmpty) {
-      return GxuEmptyClassroomCell(
-        header: viewType.headerOf(slotNumber),
-        value: fragments.join("\n"),
-        roomId: roomId,
-        slotNumber: slotNumber,
-        viewType: viewType,
-        state: GxuEmptyClassroomCellState.occupied,
-        localDetailMessage: null,
-      );
-    }
     if (unavailableMessage != null) {
       return GxuEmptyClassroomCell(
         header: viewType.headerOf(slotNumber),
@@ -586,6 +586,18 @@ class GxuEmptyClassroomRemoteRoom {
         viewType: viewType,
         state: GxuEmptyClassroomCellState.unavailable,
         localDetailMessage: unavailableMessage,
+      );
+    }
+    final fragments = _buildOccupationFragments(key);
+    if (fragments.isNotEmpty) {
+      return GxuEmptyClassroomCell(
+        header: viewType.headerOf(slotNumber),
+        value: fragments.join("\n"),
+        roomId: roomId,
+        slotNumber: slotNumber,
+        viewType: viewType,
+        state: GxuEmptyClassroomCellState.occupied,
+        localDetailMessage: null,
       );
     }
     return GxuEmptyClassroomCell(
@@ -621,7 +633,7 @@ class GxuEmptyClassroomRemoteRoom {
 
   void _addFragment(List<String> target, String label, String? rawValue) {
     final value = rawValue?.trim() ?? "";
-    if (value.isEmpty) {
+    if (value.isEmpty || value == "0" || value == "0.0") {
       return;
     }
     target.add("$label $value");
@@ -661,13 +673,55 @@ class GxuEmptyClassroomResult {
   ) {
     final catalog = catalogById[room.roomId];
     final subtitle = _subtitleOf(room, catalog);
+    final totalCount = range.length;
+    final unavailable = _isRoomUnavailable(room);
+    var occupiedCount = 0;
+    var hasSchedule = false;
+    var hasExam = false;
+    var hasBorrow = false;
+    var hasAdjust = false;
+    var hasOther = false;
+    if (!unavailable) {
+      for (final slot in range) {
+        final key = viewType.keyOf(slot);
+        final scheduleOccupied = _isOccupiedValue(room.schedule[key]);
+        final examOccupied = _isOccupiedValue(room.exam[key]);
+        final borrowOccupied = _isOccupiedValue(room.borrow[key]);
+        final adjustOccupied = _isOccupiedValue(room.adjust[key]);
+        final otherOccupied = _isOccupiedValue(room.other[key]);
+        hasSchedule = hasSchedule || scheduleOccupied;
+        hasExam = hasExam || examOccupied;
+        hasBorrow = hasBorrow || borrowOccupied;
+        hasAdjust = hasAdjust || adjustOccupied;
+        hasOther = hasOther || otherOccupied;
+        final occupied =
+            scheduleOccupied ||
+            examOccupied ||
+            borrowOccupied ||
+            adjustOccupied ||
+            otherOccupied;
+        if (occupied) {
+          occupiedCount++;
+        }
+      }
+    }
+    final extraSearch = [
+      if (hasSchedule) "排课",
+      if (hasExam) "考试",
+      if (hasBorrow) "借用",
+      if (hasAdjust) "调课",
+      if (hasOther) "其它",
+    ].join(" ");
     return GxuEmptyClassroomRow(
       title: room.roomName,
       subtitle: subtitle,
-      cells: [
-        for (final slot in range)
-          room.buildCell(slotNumber: slot, viewType: viewType),
-      ],
+      totalCount: totalCount,
+      availableCount: unavailable ? 0 : (totalCount - occupiedCount),
+      occupiedCount: unavailable ? 0 : occupiedCount,
+      room: room,
+      range: range,
+      viewType: viewType,
+      extraSearchText: extraSearch,
     );
   }
 
@@ -765,6 +819,21 @@ class GxuEmptyClassroomResult {
       case GxuEmptyClassroomViewType.period:
         return 13;
     }
+  }
+
+  bool _isRoomUnavailable(GxuEmptyClassroomRemoteRoom room) {
+    if (room.statusCode.isNotEmpty && room.statusCode != "1") {
+      return true;
+    }
+    return room.undergraduateUnavailable;
+  }
+
+  bool _isOccupiedValue(String? rawValue) {
+    final value = rawValue?.trim() ?? "";
+    if (value.isEmpty || value == "0" || value == "0.0") {
+      return false;
+    }
+    return true;
   }
 }
 
