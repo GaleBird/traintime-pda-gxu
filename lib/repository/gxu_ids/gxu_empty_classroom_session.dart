@@ -68,6 +68,7 @@ class GxuEmptyClassroomSession {
     if (cell.localDetailMessage != null) {
       return cell.localDetailMessage!;
     }
+    await _ensureLoggedIn();
     final response = await _request(
       () => caSession.dio.post(
         "$_baseUrl$_detailPath",

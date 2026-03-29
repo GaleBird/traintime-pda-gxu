@@ -114,7 +114,11 @@ class GxuEmptyClassroomState extends ChangeNotifier {
     if (cached != null) {
       return SynchronousFuture(cached);
     }
+    final requestId = _resultRequestId;
     return session.loadCellDetail(form: currentForm, cell: cell).then((value) {
+      if (_disposed || requestId != _resultRequestId) {
+        return value;
+      }
       _detailCache[cacheKey] = value;
       return value;
     });
@@ -210,6 +214,7 @@ class GxuEmptyClassroomState extends ChangeNotifier {
     final rawPreference = preference.getString(
       preference.Preference.gxuEmptyClassroomQuery,
     );
+    final hasSavedQuery = _looksLikeQuerySnapshot(rawPreference);
     GxuEmptyClassroomQueryForm restored;
     try {
       restored = value.restoreFromPreference(rawPreference);
@@ -224,6 +229,9 @@ class GxuEmptyClassroomState extends ChangeNotifier {
       );
       restored = value;
     }
+    if (hasSavedQuery) {
+      return restored;
+    }
     final buildingChoice = preference.getString(
       preference.Preference.emptyClassroomLastChoice,
     );
@@ -237,6 +245,18 @@ class GxuEmptyClassroomState extends ChangeNotifier {
       }
     }
     return restored;
+  }
+
+  bool _looksLikeQuerySnapshot(String rawPreference) {
+    if (rawPreference.trim().isEmpty) {
+      return false;
+    }
+    try {
+      final decoded = jsonDecode(rawPreference);
+      return decoded is Map;
+    } on FormatException {
+      return false;
+    }
   }
 
   void _persistForm(GxuEmptyClassroomQueryForm value) {
