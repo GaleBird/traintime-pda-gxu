@@ -372,68 +372,153 @@ class _LabeledRangeRow extends StatelessWidget {
   }
 }
 
-class _AdvancedCard extends StatelessWidget {
+class _AdvancedCard extends StatefulWidget {
   final GxuEmptyClassroomQueryForm form;
   final GxuEmptyClassroomState state;
 
   const _AdvancedCard({required this.form, required this.state});
 
   @override
+  State<_AdvancedCard> createState() => _AdvancedCardState();
+}
+
+class _AdvancedCardState extends State<_AdvancedCard> {
+  static const _animationDuration = Duration(milliseconds: 180);
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Container(
-      decoration: BoxDecoration(
-        color: scheme.surface,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(horizontal: 12),
-          childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-          title: Text(
-            FlutterI18n.translate(context, "empty_classroom.advanced_filters"),
-            style: Theme.of(context).textTheme.titleSmall,
+    return Material(
+      color: scheme.surface,
+      borderRadius: BorderRadius.circular(18),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            key: const Key('gxu_empty_classroom_advanced_filters_toggle'),
+            borderRadius: BorderRadius.circular(18),
+            onTap: _toggleExpanded,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          FlutterI18n.translate(
+                            context,
+                            "empty_classroom.advanced_filters",
+                          ),
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          FlutterI18n.translate(
+                            context,
+                            "empty_classroom.advanced_filters_hint",
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  AnimatedRotation(
+                    duration: const Duration(milliseconds: 180),
+                    turns: _expanded ? 0.5 : 0,
+                    child: Icon(
+                      Icons.expand_more_rounded,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          subtitle: Text(
-            FlutterI18n.translate(
-              context,
-              "empty_classroom.advanced_filters_hint",
+          _ExpandableSection(
+            expanded: _expanded,
+            duration: _animationDuration,
+            child: _buildExpandedFilters(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExpandedFilters(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _ResponsiveRow(
+            left: _FullWidthSelectTile(
+              field: widget.form.selectField("zyqk"),
+              state: widget.state,
+            ),
+            right: _FullWidthSelectTile(
+              field: widget.form.selectField("zylx"),
+              state: widget.state,
             ),
           ),
-          children: [
-            _ResponsiveRow(
-              left: _FullWidthSelectTile(
-                field: form.selectField("zyqk"),
-                state: state,
-              ),
-              right: _FullWidthSelectTile(
-                field: form.selectField("zylx"),
-                state: state,
-              ),
+          const SizedBox(height: 12),
+          _ResponsiveRow(
+            left: _TextFieldTile(
+              field: widget.form.textField("zws"),
+              label: FlutterI18n.translate(context, "empty_classroom.seat_min"),
+              onChanged: widget.state.updateText,
             ),
-            const SizedBox(height: 12),
-            _ResponsiveRow(
-              left: _TextFieldTile(
-                field: form.textField("zws"),
-                label: FlutterI18n.translate(
-                  context,
-                  "empty_classroom.seat_min",
-                ),
-                onChanged: state.updateText,
-              ),
-              right: _TextFieldTile(
-                field: form.textField("jszws"),
-                label: FlutterI18n.translate(
-                  context,
-                  "empty_classroom.seat_max",
-                ),
-                onChanged: state.updateText,
-              ),
+            right: _TextFieldTile(
+              field: widget.form.textField("jszws"),
+              label: FlutterI18n.translate(context, "empty_classroom.seat_max"),
+              onChanged: widget.state.updateText,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
+    );
+  }
+
+  void _toggleExpanded() {
+    setState(() {
+      _expanded = !_expanded;
+    });
+  }
+}
+
+class _ExpandableSection extends StatelessWidget {
+  final bool expanded;
+  final Duration duration;
+  final Widget child;
+
+  const _ExpandableSection({
+    required this.expanded,
+    required this.duration,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: expanded ? 1 : 0),
+      duration: duration,
+      curve: Curves.easeOutCubic,
+      child: child,
+      builder: (context, value, child) {
+        final collapsed = value == 0;
+        return ClipRect(
+          child: Align(
+            alignment: Alignment.topCenter,
+            heightFactor: value,
+            child: IgnorePointer(
+              ignoring: collapsed,
+              child: Opacity(opacity: value, child: child),
+            ),
+          ),
+        );
+      },
     );
   }
 }

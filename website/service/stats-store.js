@@ -11,12 +11,13 @@ class StatsStore {
     return this.#read();
   }
 
-  async increment(routeKey, assetKey) {
+  async increment(routeKey, assetKey, source = "site") {
     return this.#enqueue(async () => {
       const stats = await this.#read();
       stats.totalDownloads += 1;
       stats.routes[routeKey] = (stats.routes[routeKey] ?? 0) + 1;
       stats.assets[assetKey] = (stats.assets[assetKey] ?? 0) + 1;
+      stats.sources[source] = (stats.sources[source] ?? 0) + 1;
       stats.updatedAt = new Date().toISOString();
       await this.#write(stats);
       return stats;
@@ -54,6 +55,7 @@ class StatsStore {
       totalDownloads: Number.parseInt(raw.totalDownloads ?? 0, 10) || 0,
       routes: raw.routes && typeof raw.routes === "object" ? raw.routes : {},
       assets: raw.assets && typeof raw.assets === "object" ? raw.assets : {},
+      sources: raw.sources && typeof raw.sources === "object" ? raw.sources : {},
       updatedAt: raw.updatedAt || null,
     };
   }

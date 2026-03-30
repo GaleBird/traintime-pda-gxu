@@ -9,6 +9,7 @@ class UpdateMessage {
     required this.ioslink,
     required this.github,
     required this.fdroid,
+    this.androidDownloadRouteId,
   });
 
   final String code;
@@ -16,4 +17,5 @@ class UpdateMessage {
   final String ioslink;
   final String github;
   final String fdroid;
+  final String? androidDownloadRouteId;
 }

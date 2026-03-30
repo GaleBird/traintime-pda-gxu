@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:watermeter/model/pda_service/message.dart';
+import 'package:watermeter/repository/update_download_tracker.dart';
 
 class UpdateDialog extends StatelessWidget {
   final UpdateMessage updateMessage;
@@ -56,7 +57,9 @@ class UpdateDialog extends StatelessWidget {
     if (Platform.isAndroid && updateMessage.fdroid != updateMessage.github) {
       actions.add(
         TextButton(
-          onPressed: () => launchUrlString(updateMessage.fdroid),
+          onPressed: () async {
+            await openAndroidUpdateDownload(updateMessage);
+          },
           child: Text(
             FlutterI18n.translate(
               context,

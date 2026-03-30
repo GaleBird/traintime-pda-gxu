@@ -1,7 +1,11 @@
 const http = require("node:http");
 
 const config = require("./config");
-const { buildUpdateView, fetchManifest, resolveDownloadTarget } = require("./manifest-client");
+const {
+  buildUpdateView,
+  fetchManifest,
+  resolveDownloadTarget,
+} = require("./manifest-client");
 const { StatsStore } = require("./stats-store");
 
 const statsStore = new StatsStore(config.statsFile);
@@ -68,7 +72,7 @@ async function handleDownload(res, downloadId, shouldCount) {
       return;
     }
     if (shouldCount) {
-      await statsStore.increment(downloadId, target.id);
+      await statsStore.increment(downloadId, target.id, "site");
     }
     sendRedirect(res, target.url);
   } catch (error) {
@@ -84,10 +88,54 @@ function routeDownload(pathname) {
   return pathname.slice(prefix.length);
 }
 
+function routeDownloadCount(pathname) {
+  const match = /^\/api\/downloads\/([^/]+)\/count$/.exec(pathname);
+  if (!match) {
+    return { matched: false, downloadId: null, hasInvalidEncoding: false };
+  }
+  try {
+    return {
+      matched: true,
+      downloadId: decodeURIComponent(match[1]),
+      hasInvalidEncoding: false,
+    };
+  } catch {
+    return { matched: true, downloadId: null, hasInvalidEncoding: true };
+  }
+}
+
+async function handleDownloadCount(res, downloadId) {
+  try {
+    const update = await loadUpdateView();
+    const target = resolveDownloadTarget(update, downloadId);
+    if (!target) {
+      sendError(res, 404, "download target not found");
+      return;
+    }
+    await statsStore.increment(downloadId, target.id, "app");
+    sendJson(res, 200, { ok: true });
+  } catch (error) {
+    sendError(res, 500, error.message);
+  }
+}
+
 function createHandler() {
   return async (req, res) => {
     const url = new URL(req.url ?? "/", "http://127.0.0.1");
     const method = req.method ?? "GET";
+    const trackedDownloadRoute = routeDownloadCount(url.pathname);
+    if (trackedDownloadRoute.matched) {
+      if (trackedDownloadRoute.hasInvalidEncoding) {
+        sendError(res, 400, "invalid download target");
+        return;
+      }
+      if (method !== "POST") {
+        sendError(res, 405, "method not allowed");
+        return;
+      }
+      await handleDownloadCount(res, trackedDownloadRoute.downloadId);
+      return;
+    }
     const isHead = method === "HEAD";
     if (method !== "GET" && !isHead) {
       sendError(res, 405, "method not allowed");

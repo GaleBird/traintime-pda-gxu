@@ -16,6 +16,7 @@ import 'package:watermeter/repository/preference.dart' as pref;
 import 'package:watermeter/repository/security/update_manifest_security.dart';
 import 'package:watermeter/repository/update_install_variant.dart';
 import 'package:watermeter/repository/update_build_number.dart';
+import 'package:watermeter/repository/update_download_tracker.dart';
 
 enum UpdateCheckResult { available, latest, localAhead, noRelease, failed }
 
@@ -72,13 +73,17 @@ Future<UpdateMessage> _buildUpdateMessage(dynamic rawData) async {
   final releaseUrl = _validatedReleaseUrl(
     _readString(json, 'html_url', fallback: ForkInfo.releasePageUrl),
   );
-  final androidUrl = await _pickAndroidDownloadUrl(json['assets'], releaseUrl);
+  final androidTarget = await _pickAndroidDownloadTarget(
+    json['assets'],
+    releaseUrl,
+  );
   return UpdateMessage(
     code: _normalizeVersionTag(_readString(json, 'tag_name')),
     update: _parseReleaseNotes(_readString(json, 'body')),
     ioslink: releaseUrl,
     github: releaseUrl,
-    fdroid: androidUrl,
+    fdroid: androidTarget.downloadUrl,
+    androidDownloadRouteId: androidTarget.routeId,
   );
 }
 
@@ -136,7 +141,7 @@ String _cleanReleaseLine(String line) {
   return text.trim();
 }
 
-Future<String> _pickAndroidDownloadUrl(
+Future<AndroidUpdateDownloadTarget> _pickAndroidDownloadTarget(
   dynamic rawAssets,
   String fallbackUrl,
 ) async {
@@ -145,12 +150,20 @@ Future<String> _pickAndroidDownloadUrl(
     rawAssets,
   ).where((asset) => asset.name.endsWith('.apk')).toList(growable: false);
   if (apkAssets.isEmpty) {
-    return trustedFallback;
+    return AndroidUpdateDownloadTarget(downloadUrl: trustedFallback);
   }
   final preferredKeywords = await _preferredAndroidAssetKeywords();
-  final preferred = _findPreferredAsset(apkAssets, preferredKeywords);
-  return _validatedAndroidDownloadUrl(
-    preferred?.downloadUrl ?? apkAssets.first.downloadUrl,
+  final selected =
+      _findPreferredAsset(apkAssets, preferredKeywords) ?? apkAssets.first;
+  final routeId = resolveAndroidDownloadRouteId(selected.name);
+  if (routeId == null) {
+    log.warning(
+      '[update][downloadCount] unsupported Android asset name: ${selected.name}',
+    );
+  }
+  return AndroidUpdateDownloadTarget(
+    downloadUrl: _validatedAndroidDownloadUrl(selected.downloadUrl),
+    routeId: routeId,
   );
 }
 

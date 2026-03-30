@@ -75,6 +75,12 @@ GxuEmptyClassroomViewType gxuEmptyClassroomViewTypeFromPreference(
 
 enum GxuEmptyClassroomCellState { available, occupied, unavailable, unknown }
 
+final Expando<Map<GxuEmptyClassroomViewType, _GxuEmptyClassroomOccupancyIndex>>
+_gxuEmptyClassroomOccupancyIndexCache =
+    Expando<Map<GxuEmptyClassroomViewType, _GxuEmptyClassroomOccupancyIndex>>(
+      'gxuEmptyClassroomOccupancyIndexCache',
+    );
+
 class GxuEmptyClassroomOption {
   final String value;
   final String label;
@@ -528,6 +534,134 @@ class GxuEmptyClassroomRow {
   // title/subtitle to avoid constructing thousands of status chips.
 }
 
+class _GxuEmptyClassroomRangeSummary {
+  final int occupiedCount;
+  final bool hasSchedule;
+  final bool hasExam;
+  final bool hasBorrow;
+  final bool hasAdjust;
+  final bool hasOther;
+
+  const _GxuEmptyClassroomRangeSummary({
+    this.occupiedCount = 0,
+    this.hasSchedule = false,
+    this.hasExam = false,
+    this.hasBorrow = false,
+    this.hasAdjust = false,
+    this.hasOther = false,
+  });
+
+  String get extraSearchText {
+    return [
+      if (hasSchedule) "排课",
+      if (hasExam) "考试",
+      if (hasBorrow) "借用",
+      if (hasAdjust) "调课",
+      if (hasOther) "其它",
+    ].join(" ");
+  }
+}
+
+class _GxuEmptyClassroomOccupancyIndex {
+  final List<int> occupiedPrefix;
+  final List<int> schedulePrefix;
+  final List<int> examPrefix;
+  final List<int> borrowPrefix;
+  final List<int> adjustPrefix;
+  final List<int> otherPrefix;
+
+  const _GxuEmptyClassroomOccupancyIndex({
+    required this.occupiedPrefix,
+    required this.schedulePrefix,
+    required this.examPrefix,
+    required this.borrowPrefix,
+    required this.adjustPrefix,
+    required this.otherPrefix,
+  });
+
+  int get maxSlot => occupiedPrefix.length - 1;
+
+  factory _GxuEmptyClassroomOccupancyIndex.fromRoom({
+    required GxuEmptyClassroomRemoteRoom room,
+    required GxuEmptyClassroomViewType viewType,
+    required int maxSlot,
+  }) {
+    final maxNumber = maxSlot < 1 ? 1 : maxSlot;
+    final occupiedPrefix = List<int>.filled(maxNumber + 1, 0);
+    final schedulePrefix = List<int>.filled(maxNumber + 1, 0);
+    final examPrefix = List<int>.filled(maxNumber + 1, 0);
+    final borrowPrefix = List<int>.filled(maxNumber + 1, 0);
+    final adjustPrefix = List<int>.filled(maxNumber + 1, 0);
+    final otherPrefix = List<int>.filled(maxNumber + 1, 0);
+    for (var slot = 1; slot <= maxNumber; slot++) {
+      final key = viewType.keyOf(slot);
+      final scheduleOccupied = _isOccupiedValue(room.schedule[key]);
+      final examOccupied = _isOccupiedValue(room.exam[key]);
+      final borrowOccupied = _isOccupiedValue(room.borrow[key]);
+      final adjustOccupied = _isOccupiedValue(room.adjust[key]);
+      final otherOccupied = _isOccupiedValue(room.other[key]);
+      occupiedPrefix[slot] =
+          occupiedPrefix[slot - 1] +
+          _toInt(
+            scheduleOccupied ||
+                examOccupied ||
+                borrowOccupied ||
+                adjustOccupied ||
+                otherOccupied,
+          );
+      schedulePrefix[slot] =
+          schedulePrefix[slot - 1] + _toInt(scheduleOccupied);
+      examPrefix[slot] = examPrefix[slot - 1] + _toInt(examOccupied);
+      borrowPrefix[slot] = borrowPrefix[slot - 1] + _toInt(borrowOccupied);
+      adjustPrefix[slot] = adjustPrefix[slot - 1] + _toInt(adjustOccupied);
+      otherPrefix[slot] = otherPrefix[slot - 1] + _toInt(otherOccupied);
+    }
+    return _GxuEmptyClassroomOccupancyIndex(
+      occupiedPrefix: occupiedPrefix,
+      schedulePrefix: schedulePrefix,
+      examPrefix: examPrefix,
+      borrowPrefix: borrowPrefix,
+      adjustPrefix: adjustPrefix,
+      otherPrefix: otherPrefix,
+    );
+  }
+
+  _GxuEmptyClassroomRangeSummary summarizeRange(List<int> range) {
+    if (range.isEmpty) {
+      return const _GxuEmptyClassroomRangeSummary();
+    }
+    final start = range.first;
+    final end = range.last;
+    return _GxuEmptyClassroomRangeSummary(
+      occupiedCount: _countInRange(occupiedPrefix, start, end),
+      hasSchedule: _countInRange(schedulePrefix, start, end) > 0,
+      hasExam: _countInRange(examPrefix, start, end) > 0,
+      hasBorrow: _countInRange(borrowPrefix, start, end) > 0,
+      hasAdjust: _countInRange(adjustPrefix, start, end) > 0,
+      hasOther: _countInRange(otherPrefix, start, end) > 0,
+    );
+  }
+
+  static int _toInt(bool value) {
+    return value ? 1 : 0;
+  }
+
+  static int _countInRange(List<int> prefix, int start, int end) {
+    if (prefix.isEmpty || start < 1 || end < start || end >= prefix.length) {
+      return 0;
+    }
+    return prefix[end] - prefix[start - 1];
+  }
+
+  static bool _isOccupiedValue(String? rawValue) {
+    final value = rawValue?.trim() ?? "";
+    if (value.isEmpty || value == "0" || value == "0.0") {
+      return false;
+    }
+    return true;
+  }
+}
+
 class GxuEmptyClassroomRemoteRoom {
   final String roomId;
   final String roomName;
@@ -638,6 +772,41 @@ class GxuEmptyClassroomRemoteRoom {
     }
     target.add("$label $value");
   }
+
+  _GxuEmptyClassroomRangeSummary _summarizeRange({
+    required List<int> range,
+    required GxuEmptyClassroomViewType viewType,
+  }) {
+    if (range.isEmpty) {
+      return const _GxuEmptyClassroomRangeSummary();
+    }
+    return _occupancyIndexOf(
+      viewType,
+      requiredMaxSlot: range.last,
+    ).summarizeRange(range);
+  }
+
+  _GxuEmptyClassroomOccupancyIndex _occupancyIndexOf(
+    GxuEmptyClassroomViewType viewType, {
+    required int requiredMaxSlot,
+  }) {
+    final cache = _gxuEmptyClassroomOccupancyIndexCache[this];
+    final cachedIndex = cache?[viewType];
+    if (cachedIndex != null && cachedIndex.maxSlot >= requiredMaxSlot) {
+      return cachedIndex;
+    }
+    final built = _GxuEmptyClassroomOccupancyIndex.fromRoom(
+      room: this,
+      viewType: viewType,
+      maxSlot: requiredMaxSlot,
+    );
+    final nextCache =
+        cache ??
+        <GxuEmptyClassroomViewType, _GxuEmptyClassroomOccupancyIndex>{};
+    nextCache[viewType] = built;
+    _gxuEmptyClassroomOccupancyIndexCache[this] = nextCache;
+    return built;
+  }
 }
 
 class GxuEmptyClassroomResult {
@@ -675,53 +844,19 @@ class GxuEmptyClassroomResult {
     final subtitle = _subtitleOf(room, catalog);
     final totalCount = range.length;
     final unavailable = _isRoomUnavailable(room);
-    var occupiedCount = 0;
-    var hasSchedule = false;
-    var hasExam = false;
-    var hasBorrow = false;
-    var hasAdjust = false;
-    var hasOther = false;
-    if (!unavailable) {
-      for (final slot in range) {
-        final key = viewType.keyOf(slot);
-        final scheduleOccupied = _isOccupiedValue(room.schedule[key]);
-        final examOccupied = _isOccupiedValue(room.exam[key]);
-        final borrowOccupied = _isOccupiedValue(room.borrow[key]);
-        final adjustOccupied = _isOccupiedValue(room.adjust[key]);
-        final otherOccupied = _isOccupiedValue(room.other[key]);
-        hasSchedule = hasSchedule || scheduleOccupied;
-        hasExam = hasExam || examOccupied;
-        hasBorrow = hasBorrow || borrowOccupied;
-        hasAdjust = hasAdjust || adjustOccupied;
-        hasOther = hasOther || otherOccupied;
-        final occupied =
-            scheduleOccupied ||
-            examOccupied ||
-            borrowOccupied ||
-            adjustOccupied ||
-            otherOccupied;
-        if (occupied) {
-          occupiedCount++;
-        }
-      }
-    }
-    final extraSearch = [
-      if (hasSchedule) "排课",
-      if (hasExam) "考试",
-      if (hasBorrow) "借用",
-      if (hasAdjust) "调课",
-      if (hasOther) "其它",
-    ].join(" ");
+    final summary = unavailable
+        ? const _GxuEmptyClassroomRangeSummary()
+        : room._summarizeRange(range: range, viewType: viewType);
     return GxuEmptyClassroomRow(
       title: room.roomName,
       subtitle: subtitle,
       totalCount: totalCount,
-      availableCount: unavailable ? 0 : (totalCount - occupiedCount),
-      occupiedCount: unavailable ? 0 : occupiedCount,
+      availableCount: unavailable ? 0 : (totalCount - summary.occupiedCount),
+      occupiedCount: unavailable ? 0 : summary.occupiedCount,
       room: room,
       range: range,
       viewType: viewType,
-      extraSearchText: extraSearch,
+      extraSearchText: summary.extraSearchText,
     );
   }
 
@@ -810,7 +945,7 @@ class GxuEmptyClassroomResult {
     return left.title.compareTo(right.title);
   }
 
-  int _maxNumberOf(GxuEmptyClassroomViewType mode) {
+  int _maxNumberOfViewType(GxuEmptyClassroomViewType mode) {
     switch (mode) {
       case GxuEmptyClassroomViewType.week:
         return 20;
@@ -821,19 +956,15 @@ class GxuEmptyClassroomResult {
     }
   }
 
+  int _maxNumberOf(GxuEmptyClassroomViewType mode) {
+    return _maxNumberOfViewType(mode);
+  }
+
   bool _isRoomUnavailable(GxuEmptyClassroomRemoteRoom room) {
     if (room.statusCode.isNotEmpty && room.statusCode != "1") {
       return true;
     }
     return room.undergraduateUnavailable;
-  }
-
-  bool _isOccupiedValue(String? rawValue) {
-    final value = rawValue?.trim() ?? "";
-    if (value.isEmpty || value == "0" || value == "0.0") {
-      return false;
-    }
-    return true;
   }
 }
 

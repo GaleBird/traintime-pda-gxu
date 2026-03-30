@@ -83,6 +83,7 @@ Build examples:
 - GXU 空闲教室筛选项判等必须按“trim 后去空字符串”的同一口径比较新旧值；依赖同步的单选字段（如教学楼）在表单态里可能保存为 `['']`，而选项面板会回传 `[]`，这种语义等价的“空选择”不能触发结果作废、本地搜索清空或旧请求失效。
 - GXU 空闲教室页的主滚动容器必须保持稳定：不要再因为 `result == null / != null` 切换而替换掉整棵 `ListView` 外层，筛选条件变化后应尽量保留当前滚动位置，尤其是修改周次/星期/节次这类筛选项时不能再把页面强行跳回顶部；下拉刷新在“已有结果”时才允许触发远端刷新。
 - GXU 空闲教室查询的页面结构异常必须显式报错（如缺少 `.cxkxjs .toolbar`、必需筛选项、教室目录列表或占用结果 `data` 列表），不要为“跑起来”静默伪造空结果；解析回归优先补 `test/gxu_empty_classroom_parser_test.dart`。
+- GXU 空闲教室结果统计对每个教室按 `viewType` 懒构建占用前缀缓存，缓存长度必须覆盖当前查询范围（不能假设固定 `20/7/13` 上限）；`GxuEmptyClassroomResult.buildRows()` 必须复用该缓存计算可用数、占用数和本地搜索标签，避免在大范围查询后重复扫描每个房间的 5 组占用 map。
 - `ToolBoxPage` 的 `网络查询` 必须走原生 `NetworkCardWindow`，不要再用 WebView 打开 `self.gxu.edu.cn` 的 HTTP 页面，避免在 WebView 里暴露明文链路登录流程。
 - GXU homepage bottom navigation keeps four tabs in order: 首页 / 工具箱 / 猪图鉴赏 / 设置. `PigPage` remains a real page backed by `pighub.top`; do not remove the pig tab again unless the user explicitly asks to drop it.
 - The `订水系统` / `后勤报修` / `空间预约` unfinished toolbox placeholders now each have their own teaser copy instead of sharing the generic unfinished message; `缴费系统` keeps the generic unfinished copy.
@@ -156,6 +157,10 @@ Build examples:
 - 官网首页现已去掉独立“首页效果图”区块：功能区改为左侧四张 App 截图轮播、右侧四个仅显示标题的紧凑功能卡；源码区不再放额外解释文案，只保留仓库名、代码地址和跳转入口。
 - 官网静态页源码仍在 `website/public/`，注意 `/download/*` 已被后端占用作真实下载跳转接口；即使后续保留其他静态说明页，也不要把静态页面路由放到 `/download/` 下面。
 - VPS 上 `gxu-app.service` 以 `azureuser` 身份运行，工作目录 `/home/azureuser/gxuapp/site/service`，统计文件写入 `/home/azureuser/gxuapp/site/data/download-counts.json`；静态站点必须放在 `/var/www/gxu.app/public` 这类 `caddy` 可读目录，不能继续直接从 `/home/azureuser/...` 提供，否则公网会返回 403。
+- 应用内“检查更新 -> 下载安装包”现在会先 POST `https://gxu.app/api/downloads/<abi>/count` 记一笔 `app` 来源统计，再继续直开对应 ABI 的 APK 下载地址；官网 `/download/*` 仍记为 `site` 来源，`download-counts.json` 新增 `sources` 字段汇总来源分布。服务端记数前必须先按当前 manifest 解析目标下载项，若该路由在当前发布里不存在则显式返回 404，不得继续记入失效资产；下载资产名匹配时要把 `_` 视为 token 内字符，避免 `x86` 误匹配到 `x86_64`。
+- Android 更新下载计数的共享逻辑现在集中在 `lib/repository/update_download_tracker.dart`，`pda_service_session.dart` 负责从清单资产解析 `androidDownloadRouteId`，`update_dialog.dart` 负责通过该 helper 先记数再打开 APK 链接；改这条链路时要连同 helper 与 `test/update_download_tracker_test.dart` 一起提交，避免再次出现 import 已接线但新库文件漏进 patch 的构建错误。
+- `gxu.app` 的下载计数路由必须把非法 percent-encoding（如 `/api/downloads/%E0%A4%A/count`）视为客户端错误并返回 `400`，不能让 `decodeURIComponent` 未捕获异常把 Node 服务打挂；官网降级下载矩阵只保留当前真实发布的 `arm64-v8a / armeabi-v7a / x86_64` 三个 ABI，不要再加没有产物的 `x86` 死链。
+- 官网页面展示的“下载次数/总下载次数”使用 `stats.totalDownloads`（包含官网跳转 + 应用内更新下载入口的计数）；如需区分来源看 `stats.sources.site/app`。
 - `gxu.app` 当前只启用裸域名；`www.gxu.app` 暂不接入，因为现有 DNS/代理链路会导致 ACME 挑战失败并拿不到证书。除非先修好 `www` 的 DNS 指向和代理设置，否则不要把 `www.gxu.app` 再写回 Caddy 站点块。
 - GitHub Android 发版工作流现在由 tag push 自动触发，配置文件是 `.github/workflows/release_for_android.yaml`，触发规则为 `v*`；常规发版流程应是：先更新 `pubspec.yaml` 版本、提交并推送 `main`，再创建并推送同版本 tag，让 GitHub Actions 构建并上传 split-per-ABI APK 到 Release。
 - Android 发版工作流现在还会把 split-per-ABI APK 上传到 DigitalOcean Spaces `myapk`，并覆盖 `manifests/update.json`；运行前必须在 GitHub Secrets 配置 `DO_SPACES_KEY`、`DO_SPACES_SECRET`、`DO_SPACES_BUCKET`、`DO_SPACES_REGION`、`DO_SPACES_CDN_BASE_URL`。

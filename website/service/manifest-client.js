@@ -10,8 +10,8 @@ const DOWNLOAD_MAP = [
   { id: "arm64-v8a", label: "Android arm64", keyword: "arm64-v8a" },
   { id: "armeabi-v7a", label: "Android 32-bit", keyword: "armeabi-v7a" },
   { id: "x86_64", label: "Android x86_64", keyword: "x86_64" },
+  { id: "x86", label: "Android x86", keyword: "x86" },
 ];
-
 async function fetchManifest() {
   const response = await fetch(config.updateManifestUrl, {
     signal: AbortSignal.timeout(config.requestTimeoutMs),
@@ -66,7 +66,7 @@ function normalizeDownloads(assets) {
 
 function normalizeDownloadItem(item, source) {
   const asset = source.find((entry) =>
-    String(entry?.name ?? "").toLowerCase().includes(item.keyword),
+    matchesDownloadKeyword(entry?.name, item.keyword),
   );
   if (!asset) {
     return null;
@@ -81,6 +81,17 @@ function normalizeDownloadItem(item, source) {
       `download asset ${item.id}`,
     ),
   };
+}
+
+function matchesDownloadKeyword(name, keyword) {
+  const pattern = new RegExp(
+    `(^|[^a-z0-9_])${escapeRegExp(keyword)}([^a-z0-9_]|$)`,
+  );
+  return pattern.test(String(name ?? "").toLowerCase());
+}
+
+function escapeRegExp(value) {
+  return String(value ?? "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function buildUpdateView(manifest, signature) {
