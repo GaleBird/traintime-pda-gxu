@@ -25,7 +25,17 @@ Rxn<UpdateCheckResult> updateResult = Rxn<UpdateCheckResult>(null);
 RxBool updateState = false.obs;
 Rxn<Object> updateError = Rxn<Object>(null);
 
-Dio get dio => Dio()..interceptors.add(logDioAdapter);
+/// 更新清单拉取的单源超时：主源挂起（TCP 连上但不出数据）时必须及时放弃，
+/// 否则 [ForkInfo.updateManifestFallbackUrls] 里的回退源永远轮不到。
+const Duration _updateManifestTimeout = Duration(seconds: 8);
+
+Dio get dio => Dio(
+  BaseOptions(
+    connectTimeout: _updateManifestTimeout,
+    receiveTimeout: _updateManifestTimeout,
+    sendTimeout: _updateManifestTimeout,
+  ),
+)..interceptors.add(logDioAdapter);
 final updateLock = Lock(reentrant: false);
 
 Future<UpdateCheckResult> checkUpdate() {
