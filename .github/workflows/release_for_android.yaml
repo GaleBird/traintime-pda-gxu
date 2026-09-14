@@ -31,6 +31,60 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
+      # 发版护栏，两道校验各堵一个洞，都在构建前快速失败：
+      #   1. tag 必须与 pubspec.yaml 的 version 一致——挡住「tag 打了但版本没 bump」的错配；
+      #   2. tag 的 +build 不得低于已发布的最大 build——挡住「误推旧 tag 且构建成功」，
+      #      那种情况会创建一个旧版本 Release 并改写线上 manifest，使所有用户的更新检查静默失效。
+      # 注意：正常「删发重发」流程会先删掉旧 Release，故最大 build 回落，本护栏不会误拦。
+      - name: Verify Release Tag
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.event_name == 'push' && github.ref_name || github.event.inputs.tag_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          pub_version="$(sed -n 's/^version:[[:space:]]*//p' pubspec.yaml | head -1 | tr -d '\r' | xargs)"
+          if [ -z "${pub_version}" ]; then
+            echo "::error::Cannot read version from pubspec.yaml"
+            exit 1
+          fi
+
+          if [ "${RELEASE_TAG}" != "v${pub_version}" ]; then
+            echo "::error::Tag '${RELEASE_TAG}' does not match pubspec.yaml version '${pub_version}' (expected tag 'v${pub_version}'). Refusing to release."
+            exit 1
+          fi
+
+          tag_build="${pub_version##*+}"
+          if ! printf '%s' "${tag_build}" | grep -qE '^[0-9]+$'; then
+            echo "::error::pubspec.yaml version '${pub_version}' has no numeric +build suffix. Refusing to release."
+            exit 1
+          fi
+
+          max_build="$(
+            curl -sS -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+            | python3 -c '
+          import json, re, sys
+          builds = []
+          for rel in json.load(sys.stdin):
+              if rel.get("draft"):
+                  continue
+              m = re.search(r"\+(\d+)$", rel.get("tag_name", ""))
+              if m:
+                  builds.append(int(m.group(1)))
+          print(max(builds) if builds else -1)
+          '
+          )"
+
+          echo "Release tag ${RELEASE_TAG} (build ${tag_build}), highest published build ${max_build}"
+
+          if [ "${tag_build}" -lt "${max_build}" ]; then
+            echo "::error::Build number ${tag_build} is lower than the highest published build ${max_build}. Refusing to release an older version — it would downgrade the online update manifest."
+            exit 1
+          fi
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
