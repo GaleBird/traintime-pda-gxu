@@ -6,7 +6,7 @@ class ForkInfo {
   static const String maintainer = 'KIKO';
   static const String maintainerUrl = 'https://github.com/GaleBird';
   static const String repositoryOwner = 'GaleBird';
-  static const String repositoryName = 'traintime_pda';
+  static const String repositoryName = 'traintime-pda-gxu';
   static const String officialWebsiteUrl = 'https://gxu.app';
   static const String graduateSystemUrl = 'https://yjsxt.gxu.edu.cn/tp';
   static const String updateManifestUrl =
