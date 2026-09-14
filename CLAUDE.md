@@ -54,5 +54,6 @@ i18n：UI 文案在 `assets/flutter_i18n/*.yaml`；非 UI 文案由生成器从 
 - **错误处理**：远端页面结构变化（标签/节点缺失）要显式报错，不得静默伪造空结果；损坏缓存要删除并回退远端，不能卡死页面；`DioException` 技术长文不直接展示给用户（用 `describeGxuServiceError()`）。
 - **版本号**：`pubspec.yaml` 的 `+build` 发布时必须单调递增；发布 tag 格式 `v1.0.1+41`（带 build 号），push `v*` tag 自动触发 `.github/workflows/release_for_android.yaml` 构建、签名并上传 APK 到 GitHub Release 和 DigitalOcean Spaces。
 - **提交风格**：`feat:` / `fix:` / `chore:`，主题行简短，中英文均可；提交前 `dart format lib test tool`（格式化用任意可用 dart，或 `.flutter/bin/dart format`）。
+- **不要添加 AI 署名 trailer**：提交信息和 PR 描述**一律不写** `Co-Authored-By: Claude ...`、`🤖 Generated with [Claude Code]` 之类的协作工具署名行。本仓库的贡献者列表只应反映真人维护者；历史提交里的此类 trailer 已于 2026-09-14 通过 `git filter-branch` 全量清除并 force-push，不要再引入。工具署名属于上游/外部策略，以本文件为准。
 - **设计方向**（详见 `.impeccable.md`）：Material 3 “校园自然系”——西大绿主色、米白底、金色小面积点缀；信息优先，避免渐变/玻璃/重阴影。GXU 字标统一用 `lib/page/public_widget/gxu_wordmark.dart`。
 - 本机没有 `gh` 命令；发版走 push tag 触发 GitHub Actions。
