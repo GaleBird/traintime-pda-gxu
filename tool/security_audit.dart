@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:path/path.dart' as path;
 
 const _allowedHttpHosts = {
-  'afdian.net',
   'ca.gxu.edu.cn',
   'ehall.xidian.edu.cn',
   'payment.xidian.edu.cn',
