@@ -1,15 +1,29 @@
 name: Release for Windows
 
+# 目前只支持手动触发（Actions 页面 Run workflow）。
+#
+# 原先这里还有一个 push tags 触发，filter 写作 "v[0-9]+.[0-9]+.[0-9]+"。GitHub Actions
+# 的 tag filter 是 glob 而不是正则，`[0-9]` 只能匹配一个字符、`+` 是字面量，所以这个
+# filter 从来不会命中任何真实 tag，该工作流历史上 0 次运行。与其留一个不可能触发的
+# 触发器误导人，不如去掉，让配置如实反映"只能手动跑"。
+#
+# 注意：这个工作流目前**并不能跑通**，恢复自动触发前需要先修下面几处：
+#   1. `tag_name: ${{ github.event.inputs.tag_name }}` —— push 事件下该值恒为空；
+#      若改回手动触发，也要先在 on.workflow_dispatch.inputs 里声明同名 input。
+#   2. `secrets.RELEASE_TOKEN` —— 本仓库并不存在这个 secret，应改用内置 GITHUB_TOKEN，
+#      并在 job 上声明 `permissions: { contents: write }`。
+#   3. `actions/checkout` 需要 `submodules: recursive`，否则拿不到 `.flutter/`，
+#      `flutter build` 必然失败。
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
+
 jobs:
  build_windows:
    runs-on: windows-latest
    steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: Install Flutter
         run: |
           git submodule update --init --recursive
